@@ -3,103 +3,986 @@
   "title": "AgentProtocol",
   "description": "Canonical message envelope, routing rules, intents, and security flags for inter-agent communication.",
   "type": "object",
-  "required": ["protocol_version", "envelope_schema", "intents", "routing", "security"],
+  "required": [
+    "protocol_version",
+    "envelope_schema",
+    "intents",
+    "routing",
+    "security"
+  ],
   "properties": {
     "protocol_version": {
       "type": "string",
-      "description": "Semantic version of the protocol."
+      "description": "Semantic version of the protocol.",
+      "default": "1.1.0"
     },
-
     "envelope_schema": {
       "type": "object",
       "description": "Defines the canonical message envelope used by all agents.",
-      "required": ["message_id", "timestamp", "from_agent_id", "to_agent_id", "intent", "payload", "metadata"],
+      "required": [
+        "message_id",
+        "timestamp",
+        "from_agent_id",
+        "to_agent_id",
+        "intent",
+        "payload",
+        "metadata"
+      ],
       "properties": {
-        "message_id": { "type": "string", "description": "Globally unique message identifier." },
-        "timestamp": { "type": "string", "format": "date-time", "description": "UTC timestamp when message was created." },
-        "from_agent_id": { "type": "string", "description": "Sender agent id or external system id." },
-        "to_agent_id": { "type": "string", "description": "Recipient agent id or routing group id." },
-        "intent": { "type": "string", "description": "High level intent name describing the action." },
-        "payload": { "type": "object", "description": "Intent-specific data." },
+        "message_id": {
+          "type": "string",
+          "description": "Globally unique message identifier."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "UTC timestamp when message was created."
+        },
+        "from_agent_id": {
+          "type": "string",
+          "description": "Sender agent id or external system id."
+        },
+        "to_agent_id": {
+          "type": "string",
+          "description": "Recipient agent id or routing group id."
+        },
+        "intent": {
+          "type": "string",
+          "description": "High level intent name. Must match a key in the intents catalog."
+        },
+        "payload": {
+          "type": "object",
+          "description": "Intent-specific data."
+        },
         "metadata": {
           "type": "object",
           "properties": {
-            "correlation_id": { "type": "string", "description": "Used to correlate related messages and threads." },
-            "thread_id": { "type": "string", "description": "Conversation or workflow thread id." },
-            "priority": { "type": "string", "enum": ["LOW","NORMAL","HIGH","CRITICAL"], "default": "NORMAL" },
-            "requires_security_review": { "type": "boolean", "default": false },
-            "sensitivity": { "type": "string", "enum": ["PUBLIC","INTERNAL","CONFIDENTIAL","RESTRICTED"], "default": "INTERNAL" },
-            "persist": { "type": "boolean", "description": "Whether message must be persisted to durable queue", "default": true },
-            "immutable_log_ref": { "type": "string", "description": "Reference to immutable ledger entry if created." }
+            "correlation_id": {
+              "type": "string",
+              "description": "Used to correlate related messages and threads."
+            },
+            "thread_id": {
+              "type": "string",
+              "description": "Conversation or workflow thread id."
+            },
+            "priority": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "NORMAL",
+                "HIGH",
+                "CRITICAL"
+              ],
+              "default": "NORMAL"
+            },
+            "requires_security_review": {
+              "type": "boolean",
+              "default": false
+            },
+            "sensitivity": {
+              "type": "string",
+              "enum": [
+                "PUBLIC",
+                "INTERNAL",
+                "CONFIDENTIAL",
+                "RESTRICTED"
+              ],
+              "default": "INTERNAL"
+            },
+            "persist": {
+              "type": "boolean",
+              "description": "Whether message must be persisted to durable queue",
+              "default": true
+            },
+            "immutable_log_ref": {
+              "type": "string",
+              "description": "Reference to immutable ledger entry if created."
+            }
           }
         },
-        "signature": { "type": "string", "description": "Optional cryptographic signature reference for non-repudiation." }
-      }
-    },
-
-    "intents": {
-      "type": "object",
-      "description": "Catalog of supported intents with brief descriptions and expected payload schema references.",
-      "additionalProperties": {
-        "type": "object",
-        "required": ["description", "direction", "example_payload"],
-        "properties": {
-          "description": { "type": "string" },
-          "direction": { "type": "string", "enum": ["agent->agent","external->agent","agent->external"] },
-          "example_payload": { "type": "object" },
-          "requires_security_review": { "type": "boolean", "default": false },
-          "sensitivity": { "type": "string", "enum": ["PUBLIC","INTERNAL","CONFIDENTIAL","RESTRICTED"], "default": "INTERNAL" }
+        "signature": {
+          "type": "string",
+          "description": "Optional cryptographic signature reference for non-repudiation."
         }
       }
     },
-
+    "intents": {
+      "type": "object",
+      "description": "Catalog of supported intents. Each key is a canonical intent name; each value describes the intent's semantics, expected payload shape, default sensitivity, and routing.",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "description",
+          "direction",
+          "example_payload"
+        ],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "agent->agent",
+              "external->agent",
+              "agent->external"
+            ]
+          },
+          "typical_route": {
+            "type": "string",
+            "description": "Most common from->to pattern, expressed as 'sender -> receiver'. Informational only; not enforced."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "in_use",
+              "implied",
+              "deprecated"
+            ],
+            "description": "in_use: appears in current test cases. implied: defined by agent capabilities or playbooks but not yet covered by a test case. deprecated: scheduled for removal."
+          },
+          "example_payload": {
+            "type": "object"
+          },
+          "payload_schema": {
+            "type": "string",
+            "description": "Optional $ref to a JSON Schema describing the payload shape for this intent."
+          },
+          "requires_security_review": {
+            "type": "boolean",
+            "default": false
+          },
+          "sensitivity": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "INTERNAL",
+              "CONFIDENTIAL",
+              "RESTRICTED"
+            ],
+            "default": "INTERNAL"
+          }
+        }
+      },
+      "properties": {
+        "CREATE_LEAD": {
+          "description": "Register a new sales lead from inbound communications, web forms, or external sources.",
+          "direction": "agent->agent",
+          "typical_route": "agent_unified_comms -> agent_marketing",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "lead": {
+              "email": "lead@example.com",
+              "name": "Test Lead",
+              "source": "website_form",
+              "captured_at": "2026-04-25T16:00:00Z"
+            }
+          }
+        },
+        "SEND_EMAIL": {
+          "description": "Request that the unified comms layer dispatch an outbound email. Subject to security and privacy review for external recipients.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_unified_comms",
+          "requires_security_review": true,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "to": "lead@example.com",
+            "subject": "Welcome",
+            "body": "Intro email",
+            "template_id": "marketing_welcome_v1",
+            "review_required": true
+          }
+        },
+        "INBOUND_MESSAGE": {
+          "description": "Raw message ingested from an external channel (email, SMS, chat, webhook). Always passes through Security before routing.",
+          "direction": "external->agent",
+          "typical_route": "external_gateway -> agent_unified_comms",
+          "requires_security_review": true,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "message_id": "email-999",
+            "channel": "email",
+            "from": "sender@example.com",
+            "subject": "Subject line",
+            "body": "Message body",
+            "headers": {
+              "Received": "1.2.3.4"
+            },
+            "attachments": []
+          }
+        },
+        "ROUTE_MESSAGE": {
+          "description": "Unified comms determines downstream owner of an inbound message after classification.",
+          "direction": "agent->agent",
+          "typical_route": "agent_unified_comms -> domain_agent",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "original_message_id": "email-999",
+            "classified_intent": "support_request",
+            "confidence": 0.87
+          }
+        },
+        "DRAFT_REPLY": {
+          "description": "Produce a draft response for human or agent review prior to sending.",
+          "direction": "agent->agent",
+          "typical_route": "agent_customer_service -> agent_unified_comms",
+          "requires_security_review": true,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "in_reply_to_message_id": "email-999",
+            "draft_body": "Thanks for reaching out...",
+            "tone": "supportive",
+            "requires_user_approval": false
+          }
+        },
+        "RECORD_TRANSACTION": {
+          "description": "Persist a financial transaction to the books and notify Tax for documentation.",
+          "direction": "agent->agent",
+          "typical_route": "agent_finance -> agent_tax",
+          "requires_security_review": true,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "transaction_id": "txn-001",
+            "amount": 100.0,
+            "currency": "USD",
+            "category": "revenue",
+            "vendor_or_customer": "Customer ABC",
+            "receipt_attached": true,
+            "business_id": "main_saas"
+          }
+        },
+        "RECONCILE_STATEMENT": {
+          "description": "Match financial statement lines against recorded transactions; flag mismatches for Audit.",
+          "direction": "agent->agent",
+          "typical_route": "agent_finance -> agent_audit",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "implied",
+          "example_payload": {
+            "statement_period": "2026-04",
+            "matched_count": 142,
+            "unmatched_count": 3,
+            "discrepancy_total": 248.17
+          }
+        },
+        "GENERATE_FINANCIAL_REPORT": {
+          "description": "Produce a financial report (P&L, cashflow, MRR breakdown) for a given period.",
+          "direction": "agent->agent",
+          "typical_route": "agent_ceo -> agent_finance",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "implied",
+          "example_payload": {
+            "report_type": "monthly_pnl",
+            "period": "2026-04",
+            "business_ids": [
+              "main_saas"
+            ]
+          }
+        },
+        "GENERATE_TAX_SUMMARY": {
+          "description": "Produce a tax-ready summary of transactions, deductions, and supporting documentation.",
+          "direction": "agent->agent",
+          "typical_route": "agent_finance -> agent_tax",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "implied",
+          "example_payload": {
+            "tax_year": 2026,
+            "jurisdiction": "US-FED",
+            "format": "audit_pack"
+          }
+        },
+        "CREATE_PURCHASE_REQUEST": {
+          "description": "Open a procurement request for vendor goods or services. Triggers approval workflow.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_procurement",
+          "requires_security_review": true,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "request_id": "pr-2026-001",
+            "vendor": "Acme Tools Inc",
+            "amount": 6000,
+            "currency": "USD",
+            "business_purpose": "Hardware for office expansion",
+            "attachments": [
+              "quote.pdf"
+            ]
+          }
+        },
+        "CHECK_BUDGET": {
+          "description": "Verify a purchase request fits within budget allocation and policy thresholds.",
+          "direction": "agent->agent",
+          "typical_route": "agent_procurement -> agent_finance",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "request_id": "pr-2026-001",
+            "amount": 6000,
+            "budget_bucket": "capex_q2"
+          }
+        },
+        "REQUEST_APPROVAL": {
+          "description": "Solicit approval from one or more authorized approvers for a privileged action (purchase, deploy, escalate).",
+          "direction": "agent->agent",
+          "typical_route": "agent_finance -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "request_id": "pr-2026-001",
+            "action_type": "purchase",
+            "approvers_required": [
+              "agent_finance",
+              "agent_ceo"
+            ],
+            "details": "Vendor: Acme Tools Inc; Amount: 6000 USD",
+            "expires_at": "2026-04-26T16:20:00Z"
+          }
+        },
+        "APPROVAL_GRANTED": {
+          "description": "Approver assents to a pending request. Multiple grants may be required to fulfill the approval policy.",
+          "direction": "agent->agent",
+          "typical_route": "agent_ceo -> agent_procurement",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "request_id": "pr-2026-001",
+            "approved_by": "agent_ceo",
+            "timestamp": "2026-04-25T16:20:00Z",
+            "rationale": "Within capex plan"
+          }
+        },
+        "APPROVAL_DENIED": {
+          "description": "Approver rejects a pending request. Terminates the workflow with a recorded reason.",
+          "direction": "agent->agent",
+          "typical_route": "agent_ceo -> agent_procurement",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "request_id": "pr-2026-001",
+            "denied_by": "agent_ceo",
+            "timestamp": "2026-04-25T16:20:00Z",
+            "reason": "Vendor failed risk review"
+          }
+        },
+        "EXECUTE_PAYMENT": {
+          "description": "Execute a payment against an approved purchase using a tokenized payment method. Never carries raw card data.",
+          "direction": "agent->agent",
+          "typical_route": "agent_procurement -> agent_finance",
+          "requires_security_review": true,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "request_id": "pr-2026-001",
+            "payment_method": "virtual_card_token_abc",
+            "amount": 6000,
+            "currency": "USD",
+            "timestamp": "2026-04-25T16:21:00Z"
+          }
+        },
+        "VENDOR_RISK_REVIEW": {
+          "description": "Security and Legal evaluate a high-risk vendor before onboarding.",
+          "direction": "agent->agent",
+          "typical_route": "agent_procurement -> agent_security",
+          "requires_security_review": true,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "vendor_id": "vendor-acme",
+            "risk_factors": [
+              "new_jurisdiction",
+              "no_soc2"
+            ],
+            "review_type": "initial_onboarding"
+          }
+        },
+        "DEPLOY_AUTOMATION": {
+          "description": "Register and deploy an automation script or workflow. Requires Security review for external-touching automations.",
+          "direction": "agent->agent",
+          "typical_route": "agent_automation -> agent_automation",
+          "requires_security_review": true,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "automation_id": "sync_contacts_v1",
+            "action": "deploy",
+            "script_hash": "sha256:sync-v1",
+            "target_environment": "sandbox"
+          }
+        },
+        "RUN_AUTOMATION": {
+          "description": "Execute a registered automation with parameters.",
+          "direction": "agent->agent",
+          "typical_route": "agent_automation -> agent_automation",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "in_use",
+          "example_payload": {
+            "automation_id": "sync_contacts_v1",
+            "run_id": "run-001",
+            "params": {
+              "source": "crm",
+              "target": "mailing_list"
+            }
+          }
+        },
+        "AUTOMATION_ERROR": {
+          "description": "Reports a failed automation run for triage and possible retry.",
+          "direction": "agent->agent",
+          "typical_route": "agent_automation -> agent_audit",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "in_use",
+          "example_payload": {
+            "run_id": "run-001",
+            "automation_id": "sync_contacts_v1",
+            "error": "ConnectionTimeout at step 3",
+            "stack_hash": "sha256:trace-abc",
+            "timestamp": "2026-04-25T16:00:00Z"
+          }
+        },
+        "RETRY_AUTOMATION": {
+          "description": "Initiate a retry of a failed automation, typically with backoff.",
+          "direction": "agent->agent",
+          "typical_route": "agent_audit -> agent_automation",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "in_use",
+          "example_payload": {
+            "automation_id": "sync_contacts_v1",
+            "run_id": "run-001-retry",
+            "attempt": 2,
+            "reason": "transient network error; retrying with backoff"
+          }
+        },
+        "ESCALATE_TO_CEO": {
+          "description": "Escalate an issue, decision, or anomaly to the CEO agent for resolution or directional guidance.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "subject": "Persistent automation failure",
+            "context_id": "run-001",
+            "status": "DEGRADED",
+            "details": "Retry attempted; persistent failures",
+            "timestamp": "2026-04-25T16:05:00Z",
+            "options": [
+              "pause",
+              "rollback",
+              "investigate"
+            ]
+          }
+        },
+        "SECURITY_EVENT": {
+          "description": "Generic security event notification. Carries severity, category, and recommended actions per the security_events schema.",
+          "direction": "agent->agent",
+          "typical_route": "agent_security -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "event_id": "sec-0001",
+            "category": "PHISHING_SUSPECTED",
+            "severity": "HIGH",
+            "summary": "Quarantined phishing email targeting users",
+            "timestamp": "2026-04-25T16:11:00Z",
+            "playbook_ref": "/bootstrap/incident_response_playbooks/phishing_playbook.txt"
+          }
+        },
+        "QUARANTINE_MESSAGE": {
+          "description": "Quarantine a message and any related thread artifacts pending Security review.",
+          "direction": "agent->agent",
+          "typical_route": "agent_security -> agent_unified_comms",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "message_id": "email-999",
+            "action": "quarantine",
+            "ioc": {
+              "url": "http://malicious.example/login",
+              "sender": "attacker@example.com"
+            },
+            "timestamp": "2026-04-25T16:10:00Z"
+          }
+        },
+        "RELEASE_FROM_QUARANTINE": {
+          "description": "Release a previously quarantined message after Security review concludes it is benign.",
+          "direction": "agent->agent",
+          "typical_route": "agent_security -> agent_unified_comms",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "message_id": "email-999",
+            "reviewed_by": "agent_security",
+            "rationale": "False positive: legitimate vendor with new domain"
+          }
+        },
+        "NOTIFY_CEO": {
+          "description": "Send the CEO a high-priority notification (security, financial, operational). Distinct from ESCALATE_TO_CEO in that it does not require a decision.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "in_use",
+          "example_payload": {
+            "event_id": "sec-0001",
+            "category": "PHISHING_SUSPECTED",
+            "severity": "HIGH",
+            "summary": "Quarantined phishing email targeting users",
+            "timestamp": "2026-04-25T16:11:00Z"
+          }
+        },
+        "UPDATE_RULES": {
+          "description": "Update detection rules, blocklists, or policy configuration based on new threat intelligence.",
+          "direction": "agent->agent",
+          "typical_route": "agent_security -> agent_security",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "rule_id": "phish-rule-2026-04",
+            "action": "add_blocklist",
+            "indicators": [
+              "http://malicious.example/login",
+              "attacker@example.com"
+            ],
+            "ttl_days": 90
+          }
+        },
+        "SCAN_ARTIFACT": {
+          "description": "Submit a link, file, or attachment to security scanning (sandbox, AV, URL reputation).",
+          "direction": "agent->agent",
+          "typical_route": "agent_unified_comms -> agent_security",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "artifact_type": "url",
+            "artifact_value": "http://example.com/file.pdf",
+            "context_message_id": "email-999"
+          }
+        },
+        "EXPORT_REQUEST": {
+          "description": "Request bulk export of data from a data store. Subject to Privacy and Security review based on row count and sensitivity.",
+          "direction": "agent->external",
+          "typical_route": "agent_research -> data_store_service",
+          "requires_security_review": true,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "request_id": "export-2026-01",
+            "query_description": "All customers created before 2026-01-01",
+            "requested_by": "agent_research",
+            "estimated_rows": 120000,
+            "purpose": "cohort_analysis"
+          }
+        },
+        "DETECT_BULK_EXPORT": {
+          "description": "Privacy/data store flags a bulk export attempt that crosses sensitivity thresholds.",
+          "direction": "external->agent",
+          "typical_route": "data_store_service -> agent_privacy",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "request_id": "export-2026-01",
+            "rows": 120000,
+            "sensitivity": "HIGH",
+            "trigger_rule": "bulk_pii_export_threshold",
+            "timestamp": "2026-04-25T16:30:00Z"
+          }
+        },
+        "BLOCK_EXPORT": {
+          "description": "Privacy or Security blocks an export request that fails policy.",
+          "direction": "agent->external",
+          "typical_route": "agent_privacy -> data_store_service",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "request_id": "export-2026-01",
+            "action": "deny",
+            "reason": "sensitivity_high_and_no_approved_business_case",
+            "appeal_path": "submit business justification to agent_ceo"
+          }
+        },
+        "REVOKE_CREDENTIALS": {
+          "description": "Revoke or suspend credentials, API tokens, or session keys for an affected principal.",
+          "direction": "agent->agent",
+          "typical_route": "agent_privacy -> agent_security",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "affected_principal": "agent_research",
+            "principal_type": "agent",
+            "action": "suspend",
+            "reason": "unapproved bulk export attempt",
+            "duration_minutes": null
+          }
+        },
+        "ROTATE_KEYS": {
+          "description": "Rotate cryptographic keys, API tokens, or shared secrets. Often triggered by playbooks.",
+          "direction": "agent->agent",
+          "typical_route": "agent_security -> external_kms",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "implied",
+          "example_payload": {
+            "key_id": "kms-signing-key-1",
+            "rotation_reason": "scheduled_quarterly",
+            "force_immediate": false
+          }
+        },
+        "INITIATE_RECOVERY": {
+          "description": "Begin an incident recovery workflow per the appropriate playbook.",
+          "direction": "agent->agent",
+          "typical_route": "agent_security -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "RESTRICTED",
+          "status": "in_use",
+          "example_payload": {
+            "event_id": "sec-0002",
+            "category": "DATA_LEAK_RISK",
+            "severity": "CRITICAL",
+            "summary": "Blocked unapproved bulk export; credentials suspended",
+            "playbook_ref": "/bootstrap/incident_response_playbooks/data_leak_playbook.txt",
+            "timestamp": "2026-04-25T16:31:00Z"
+          }
+        },
+        "PRIVACY_REVIEW_REQUEST": {
+          "description": "Request Privacy Agent review of a proposed data flow, retention rule, or external integration.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_privacy",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "context": "Adding new analytics provider",
+            "data_categories": [
+              "customer_email",
+              "behavioral_events"
+            ],
+            "third_party": "AnalyticsCo",
+            "retention_proposed_days": 365
+          }
+        },
+        "AUDIT_REVIEW_REQUEST": {
+          "description": "Request Audit Agent review of an output, decision, or workflow for quality and policy compliance.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_audit",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "review_target_id": "campaign-spring-2026",
+            "review_target_type": "marketing_campaign",
+            "reviewer_focus": [
+              "accuracy",
+              "brand_compliance"
+            ]
+          }
+        },
+        "AUDIT_FINDING": {
+          "description": "Audit Agent reports a quality issue, policy violation, or inconsistency.",
+          "direction": "agent->agent",
+          "typical_route": "agent_audit -> any_agent",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "finding_id": "audit-2026-014",
+            "severity": "MEDIUM",
+            "target": "campaign-spring-2026",
+            "issue": "Claim 'GDPR compliant' lacks supporting documentation",
+            "recommended_correction": "Remove claim or attach DPA reference"
+          }
+        },
+        "RESEARCH_REQUEST": {
+          "description": "CEO requests market, competitor, or partnership research from Research Agent.",
+          "direction": "agent->agent",
+          "typical_route": "agent_ceo -> agent_research",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "topic": "Competitor pricing in SMB CRM",
+            "depth": "standard",
+            "deadline": "2026-04-30"
+          }
+        },
+        "GRANT_OPPORTUNITY": {
+          "description": "Grant Agent reports a discovered grant opportunity matching business profile.",
+          "direction": "agent->agent",
+          "typical_route": "agent_grants -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "grant_id": "sba-innovation-2026",
+            "amount_max": 50000,
+            "deadline": "2026-06-15",
+            "eligibility_match": "high",
+            "draft_status": "not_started"
+          }
+        },
+        "CREATE_TASK": {
+          "description": "CEO assigns a task to a domain agent. Carries scope, deadline, and KPI linkage.",
+          "direction": "agent->agent",
+          "typical_route": "agent_ceo -> any_agent",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "in_use",
+          "example_payload": {
+            "task_id": "task-2026-042",
+            "target_agent_id": "agent_marketing",
+            "description": "Design marketing campaign for spring launch",
+            "deadline": "2026-05-01",
+            "related_kpis": [
+              "lead_volume_q2"
+            ]
+          }
+        },
+        "TASK_STATUS_UPDATE": {
+          "description": "Agent reports progress on an assigned task.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "task_id": "task-2026-042",
+            "status": "in_progress",
+            "percent_complete": 60,
+            "blockers": []
+          }
+        },
+        "DAILY_SUMMARY": {
+          "description": "Generate the day's business, operational, and security summary per daily_summary_schema.",
+          "direction": "agent->agent",
+          "typical_route": "agent_ceo -> log_registry",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "date": "2026-04-25",
+            "summary_type": "DAILY_BUSINESS_SUMMARY",
+            "business_entities": [
+              "main_saas"
+            ]
+          }
+        },
+        "KPI_REPORT": {
+          "description": "Agent reports current value of one or more KPIs for the registry.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "kpi_id": "monthly_revenue",
+            "current_value": 8420.55,
+            "currency": "USD",
+            "as_of": "2026-04-25T23:59:59Z"
+          }
+        },
+        "HEARTBEAT_CHECK": {
+          "description": "Liveness probe sent to an agent per the heartbeat protocol.",
+          "direction": "agent->agent",
+          "typical_route": "agent_ceo -> any_agent",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "timestamp": "2026-04-25T16:00:00Z"
+          }
+        },
+        "HEARTBEAT_RESPONSE": {
+          "description": "Reply to HEARTBEAT_CHECK indicating agent health.",
+          "direction": "agent->agent",
+          "typical_route": "any_agent -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "status": "OK",
+            "details": "queue_depth=3, last_action=2026-04-25T15:59:50Z"
+          }
+        },
+        "SHUTDOWN_NOTICE": {
+          "description": "Broadcast announcing imminent system shutdown so agents may flush queues and persist state.",
+          "direction": "agent->agent",
+          "typical_route": "agent_ceo -> all_agents",
+          "requires_security_review": false,
+          "sensitivity": "INTERNAL",
+          "status": "implied",
+          "example_payload": {
+            "shutdown_at": "2026-04-25T17:00:00Z",
+            "reason": "scheduled_maintenance",
+            "grace_period_seconds": 300
+          }
+        },
+        "USER_APPROVAL_REQUEST": {
+          "description": "CEO requests human user approval for an action that exceeds agent authority (large spend, policy exception, irreversible action).",
+          "direction": "agent->external",
+          "typical_route": "agent_ceo -> external_user",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "approval_id": "ua-2026-007",
+            "context_summary": "Procurement request $12,000 exceeds CEO sole-approve threshold",
+            "options": [
+              "approve",
+              "deny",
+              "request_more_info"
+            ],
+            "expires_at": "2026-04-26T16:00:00Z"
+          }
+        },
+        "USER_APPROVAL_RESPONSE": {
+          "description": "Human user response to a USER_APPROVAL_REQUEST.",
+          "direction": "external->agent",
+          "typical_route": "external_user -> agent_ceo",
+          "requires_security_review": false,
+          "sensitivity": "CONFIDENTIAL",
+          "status": "implied",
+          "example_payload": {
+            "approval_id": "ua-2026-007",
+            "decision": "approve",
+            "responder_id": "user_owner",
+            "timestamp": "2026-04-25T17:00:00Z",
+            "comments": "Approved; ensure receipt is filed under capex"
+          }
+        }
+      }
+    },
     "routing": {
       "type": "object",
       "description": "Routing rules and broker behavior.",
       "properties": {
-        "use_message_broker": { "type": "boolean", "default": true },
+        "use_message_broker": {
+          "type": "boolean",
+          "default": true
+        },
         "broker_requirements": {
           "type": "object",
           "properties": {
-            "durable_persistence": { "type": "boolean", "default": true },
-            "ordered_delivery": { "type": "boolean", "default": true },
-            "at_least_once": { "type": "boolean", "default": true },
-            "dead_letter_queue": { "type": "boolean", "default": true }
+            "durable_persistence": {
+              "type": "boolean",
+              "default": true
+            },
+            "ordered_delivery": {
+              "type": "boolean",
+              "default": true
+            },
+            "at_least_once": {
+              "type": "boolean",
+              "default": true
+            },
+            "dead_letter_queue": {
+              "type": "boolean",
+              "default": true
+            }
           }
         },
         "routing_rules": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["match", "route_to"],
+            "required": [
+              "match",
+              "route_to"
+            ],
             "properties": {
-              "match": { "type": "object", "description": "Match conditions for envelope fields" },
-              "route_to": { "type": "string", "description": "Agent id or broker topic/queue" },
-              "priority_override": { "type": "string", "enum": ["LOW","NORMAL","HIGH","CRITICAL"] }
+              "match": {
+                "type": "object",
+                "description": "Match conditions for envelope fields"
+              },
+              "route_to": {
+                "type": "string",
+                "description": "Agent id or broker topic/queue"
+              },
+              "priority_override": {
+                "type": "string",
+                "enum": [
+                  "LOW",
+                  "NORMAL",
+                  "HIGH",
+                  "CRITICAL"
+                ]
+              }
             }
           }
         },
         "dlq_policy": {
           "type": "object",
           "properties": {
-            "max_delivery_attempts": { "type": "number", "default": 5 },
-            "backoff_strategy": { "type": "string", "enum": ["exponential","linear"], "default": "exponential" },
-            "notify_on_dlq": { "type": "boolean", "default": true }
+            "max_delivery_attempts": {
+              "type": "number",
+              "default": 5
+            },
+            "backoff_strategy": {
+              "type": "string",
+              "enum": [
+                "exponential",
+                "linear"
+              ],
+              "default": "exponential"
+            },
+            "notify_on_dlq": {
+              "type": "boolean",
+              "default": true
+            }
           }
         }
       }
     },
-
     "security": {
       "type": "object",
       "description": "Security and compliance rules for messages.",
-      "required": ["encryption", "signing", "access_control"],
+      "required": [
+        "encryption",
+        "signing",
+        "access_control"
+      ],
       "properties": {
         "encryption": {
           "type": "object",
           "properties": {
-            "in_transit": { "type": "string", "enum": ["TLS1.2","TLS1.3"], "default": "TLS1.3" },
-            "at_rest": { "type": "string", "enum": ["AES-256","KMS-managed"], "default": "KMS-managed" }
+            "in_transit": {
+              "type": "string",
+              "enum": [
+                "TLS1.2",
+                "TLS1.3"
+              ],
+              "default": "TLS1.3"
+            },
+            "at_rest": {
+              "type": "string",
+              "enum": [
+                "AES-256",
+                "KMS-managed"
+              ],
+              "default": "KMS-managed"
+            }
           }
         },
         "signing": {
@@ -107,53 +990,105 @@
           "properties": {
             "required_for": {
               "type": "array",
-              "items": { "type": "string" },
-              "description": "List of intents or actions that require cryptographic signing"
+              "items": {
+                "type": "string"
+              },
+              "description": "List of intents that require cryptographic signing. If an intent is listed here, envelope.signature must be present."
             },
-            "signature_algorithm": { "type": "string", "default": "RSASSA-PSS-SHA256" }
+            "signature_algorithm": {
+              "type": "string",
+              "default": "RSASSA-PSS-SHA256"
+            }
           }
         },
         "access_control": {
           "type": "object",
           "properties": {
-            "rbac_required": { "type": "boolean", "default": true },
-            "audit_access": { "type": "boolean", "default": true }
+            "rbac_required": {
+              "type": "boolean",
+              "default": true
+            },
+            "audit_access": {
+              "type": "boolean",
+              "default": true
+            }
           }
         },
         "dlp": {
           "type": "object",
           "properties": {
-            "sensitive_patterns": { "type": "array", "items": { "type": "string" } },
+            "sensitive_patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
             "actions_on_detection": {
               "type": "array",
-              "items": { "type": "string", "enum": ["quarantine","redact","block","notify"] }
+              "items": {
+                "type": "string",
+                "enum": [
+                  "quarantine",
+                  "redact",
+                  "block",
+                  "notify"
+                ]
+              }
             }
           }
         }
       }
     },
-
     "response_schema": {
       "type": "object",
       "description": "Standardized response envelope for agent replies.",
-      "required": ["message_id", "in_reply_to", "timestamp", "status", "result"],
+      "required": [
+        "message_id",
+        "in_reply_to",
+        "timestamp",
+        "status",
+        "result"
+      ],
       "properties": {
-        "message_id": { "type": "string" },
-        "in_reply_to": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "status": { "type": "string", "enum": ["OK","ERROR","PENDING","DEFERRED","ESCALATED"] },
-        "result": { "type": "object" },
+        "message_id": {
+          "type": "string"
+        },
+        "in_reply_to": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OK",
+            "ERROR",
+            "PENDING",
+            "DEFERRED",
+            "ESCALATED"
+          ]
+        },
+        "result": {
+          "type": "object"
+        },
         "error": {
           "type": "object",
           "properties": {
-            "code": { "type": "string" },
-            "message": { "type": "string" },
-            "details": { "type": "object" }
+            "code": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "details": {
+              "type": "object"
+            }
           }
         }
       }
     },
-
     "examples": {
       "type": "object",
       "description": "Concrete message examples for common flows.",
@@ -167,13 +1102,17 @@
             "to_agent_id": "agent_marketing",
             "intent": "CREATE_LEAD",
             "payload": {
-              "lead": { "email": "lead@example.com", "name": "Test Lead", "source": "website_form" }
+              "lead": {
+                "email": "lead@example.com",
+                "name": "Test Lead",
+                "source": "website_form"
+              }
             },
             "metadata": {
               "correlation_id": "thread-123",
               "priority": "NORMAL",
               "requires_security_review": false,
-              "sensitivity": "INTERNAL",
+              "sensitivity": "CONFIDENTIAL",
               "persist": true
             }
           }
@@ -191,13 +1130,16 @@
               "category": "PHISHING_SUSPECTED",
               "severity": "HIGH",
               "summary": "Quarantined phishing email targeting users",
-              "artifacts": { "url": "http://malicious.example/login", "sender": "attacker@example.com" }
+              "artifacts": {
+                "url": "http://malicious.example/login",
+                "sender": "attacker@example.com"
+              }
             },
             "metadata": {
               "correlation_id": "sec-thread-1",
               "priority": "HIGH",
               "requires_security_review": true,
-              "sensitivity": "CONFIDENTIAL",
+              "sensitivity": "RESTRICTED",
               "persist": true,
               "immutable_log_ref": "ledger-0001"
             },
@@ -206,12 +1148,19 @@
         }
       }
     },
-
     "versioning_and_compatibility": {
       "type": "object",
       "properties": {
-        "backward_compatibility": { "type": "string", "description": "Policy for backward compatibility" },
-        "deprecation_policy": { "type": "string", "description": "How intents or fields are deprecated" }
+        "backward_compatibility": {
+          "type": "string",
+          "description": "Policy for backward compatibility",
+          "default": "Minor versions add fields and intents without breaking existing consumers. Major versions may remove or rename fields and intents."
+        },
+        "deprecation_policy": {
+          "type": "string",
+          "description": "How intents or fields are deprecated",
+          "default": "Intents marked status=deprecated remain in the catalog for at least one minor version after deprecation announcement. Removed intents are documented in CHANGELOG.md."
+        }
       }
     }
   }
