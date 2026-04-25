@@ -1,0 +1,28 @@
+project:
+  name: multi-agent-business-os
+  version: 1.0
+
+resources:
+  schemas:
+    - schemas/agent_schema.json
+    - schemas/agent_protocol.json
+    - schemas/security_events.json
+    - schemas/log_schema.json
+    - schemas/daily_summary_schema.json
+
+agents:
+  - agents/ceo_agent.json
+  - agents/security_agent.json
+  - agents/finance_agent.json
+  - agents/marketing_agent.json
+  - agents/procurement_agent.json
+  - agents/research_agent.json
+  - agents/audit_agent.json
+  - agents/automation_agent.json
+  - agents/privacy_agent.json
+  - agents/tax_agent.json
+
+settings:
+  auto_load_schemas: true
+  enforce_protocol: true
+  enable_security_agent: true

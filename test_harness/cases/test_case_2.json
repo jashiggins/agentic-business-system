@@ -1,0 +1,70 @@
+{
+  "name": "Automation Failure Recovery",
+  "description": "Automation Agent deploys a contact sync script that fails mid-run; system retries and escalates.",
+  "steps": [
+    {
+      "message_id": "m1",
+      "intent": "DEPLOY_AUTOMATION",
+      "from_agent_id": "agent_automation",
+      "to_agent_id": "agent_automation",
+      "payload": {
+        "automation_id": "sync_contacts_v1",
+        "action": "deploy",
+        "script_hash": "sha256:sync-v1"
+      }
+    },
+    {
+      "message_id": "m2",
+      "intent": "RUN_AUTOMATION",
+      "from_agent_id": "agent_automation",
+      "to_agent_id": "agent_automation",
+      "payload": {
+        "automation_id": "sync_contacts_v1",
+        "run_id": "run-001",
+        "params": {"source":"crm","target":"mailing_list"}
+      }
+    },
+    {
+      "message_id": "m3",
+      "intent": "AUTOMATION_ERROR",
+      "from_agent_id": "agent_automation",
+      "to_agent_id": "agent_audit",
+      "payload": {
+        "run_id": "run-001",
+        "automation_id": "sync_contacts_v1",
+        "error": "Exception: ConnectionTimeout at step 3",
+        "timestamp": "2026-04-25T16:00:00Z"
+      }
+    },
+    {
+      "message_id": "m4",
+      "intent": "RETRY_AUTOMATION",
+      "from_agent_id": "agent_audit",
+      "to_agent_id": "agent_automation",
+      "payload": {
+        "automation_id": "sync_contacts_v1",
+        "run_id": "run-001-retry",
+        "reason": "transient network error; retrying with backoff"
+      }
+    },
+    {
+      "message_id": "m5",
+      "intent": "ESCALATE_TO_CEO",
+      "from_agent_id": "agent_automation",
+      "to_agent_id": "agent_ceo",
+      "payload": {
+        "automation_id": "sync_contacts_v1",
+        "run_id": "run-001",
+        "status": "DEGRADED",
+        "details": "Retry attempted; persistent failures",
+        "timestamp": "2026-04-25T16:05:00Z"
+      }
+    }
+  ],
+  "assertions": [
+    "Automation error is logged to /logs/events/",
+    "Retry attempt is recorded and executed",
+    "CEO receives escalation message",
+    "Automation marked DEGRADED if retries fail"
+  ]
+}

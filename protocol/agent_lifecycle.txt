@@ -1,0 +1,51 @@
+UNIVERSAL AGENT LIFECYCLE
+
+States:
+- OFFLINE
+- INITIALIZING
+- IDLE
+- PROCESSING
+- DEGRADED
+- UNRESPONSIVE
+- SHUTDOWN
+
+Lifecycle:
+
+1. OFFLINE → INITIALIZING
+   - Agent config loaded from /agents/<id>.json
+   - Dependencies checked
+   - Security profile validated
+
+2. INITIALIZING → IDLE
+   - Agent registers with Agent Registry
+   - Agent confirms readiness to CEO Agent
+
+3. IDLE → PROCESSING
+   - Agent receives a message via agent_protocol
+   - Validates:
+     - intent
+     - payload
+     - security flags
+   - Begins work
+
+4. PROCESSING → IDLE
+   - Agent produces response message
+   - Optionally logs action to /logs/events/
+   - Returns to IDLE, awaiting next message
+
+5. Any state → DEGRADED
+   - Agent reports HEARTBEAT_RESPONSE with status=DEGRADED
+   - CEO Agent may:
+     - reduce load
+     - reroute tasks
+     - trigger investigation
+
+6. DEGRADED → UNRESPONSIVE
+   - Missed heartbeats > max_missed_heartbeats
+   - CEO Agent marks agent UNRESPONSIVE
+   - Security Agent may be notified
+
+7. Any state → SHUTDOWN
+   - System shutdown sequence initiated
+   - Agent flushes queue and persists state
+   - Agent transitions to SHUTDOWN

@@ -1,0 +1,28 @@
+{
+  "id": "agent_audit",
+  "name": "Audit & Quality Control Agent",
+  "role": "Reviews outputs for accuracy, consistency, and compliance",
+  "scope": "Cross-agent review, quality checks, policy adherence",
+  "capabilities": [
+    "Review agent outputs",
+    "Check for policy violations",
+    "Flag inconsistencies",
+    "Recommend corrections"
+  ],
+  "inputs": ["agent_outputs", "policies", "logs"],
+  "outputs": ["audit_reports", "quality_flags", "correction_requests"],
+  "dependencies": ["agent_security", "agent_privacy"],
+  "kpis": [
+    {
+      "name": "Issues Detected per Review",
+      "metric_type": "count"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "HIGH",
+    "requires_security_review": false,
+    "allowed_data_types": ["all_non_raw_secrets"]
+  },
+  "configuration": {},
+  "notes": "Acts as a second line of defense after Security and Privacy."
+}

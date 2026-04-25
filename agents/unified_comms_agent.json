@@ -1,0 +1,35 @@
+{
+  "id": "agent_unified_comms",
+  "name": "Unified Communications Agent",
+  "role": "Centralizes and drafts communications in the user's voice",
+  "scope": "Email, Slack, WhatsApp, SMS, customer messages",
+  "capabilities": [
+    "Ingest inbound messages",
+    "Classify message intent",
+    "Draft responses in user voice",
+    "Route messages to appropriate agents",
+    "Maintain communication history"
+  ],
+  "inputs": ["raw_messages", "customer_inquiries", "internal_requests"],
+  "outputs": ["draft_replies", "routed_tasks", "communication_logs"],
+  "dependencies": ["agent_security"],
+  "kpis": [
+    {
+      "name": "Response Coverage",
+      "description": "Percentage of inbound messages drafted or routed",
+      "metric_type": "percentage"
+    },
+    {
+      "name": "Average Draft Turnaround Time",
+      "description": "Time from message receipt to draft generation",
+      "metric_type": "duration"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "HIGH",
+    "requires_security_review": true,
+    "allowed_data_types": ["customer_communications", "internal_messages"]
+  },
+  "configuration": {},
+  "notes": "All external content must be scanned by Security before use."
+}

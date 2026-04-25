@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DailySummaryLog",
+  "description": "Canonical structure for daily business, financial, operational, and security summaries.",
+  "type": "object",
+
+  "required": [
+    "date",
+    "summary_type",
+    "business_entities",
+    "metrics",
+    "security_overview",
+    "operational_highlights",
+    "financial_notes",
+    "risks",
+    "action_items"
+  ],
+
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "The date this summary covers."
+    },
+
+    "summary_type": {
+      "type": "string",
+      "enum": ["DAILY_BUSINESS_SUMMARY"],
+      "description": "Type of summary."
+    },
+
+    "business_entities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of businesses or units included in this summary."
+    },
+
+    "metrics": {
+      "type": "object",
+      "required": ["revenue", "expenses", "net_profit"],
+      "properties": {
+        "revenue": { "type": "number" },
+        "expenses": { "type": "number" },
+        "net_profit": { "type": "number" },
+        "new_customers": { "type": "number" },
+        "churned_customers": { "type": "number" },
+        "mrr": { "type": "number" },
+        "cash_on_hand": { "type": "number" }
+      }
+    },
+
+    "security_overview": {
+      "type": "object",
+      "required": ["total_events", "high_severity_events", "events_resolved", "open_events"],
+      "properties": {
+        "total_events": { "type": "number" },
+        "high_severity_events": { "type": "number" },
+        "events_resolved": { "type": "number" },
+        "open_events": { "type": "number" },
+        "notable_events": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "operational_highlights": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Key operational achievements or issues."
+    },
+
+    "financial_notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Important financial observations or anomalies."
+    },
+
+    "risks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Known risks or concerns identified today."
+    },
+
+    "action_items": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Tasks or follow-ups required based on today's summary."
+    },
+
+    "metadata": {
+      "type": "object",
+      "description": "Optional metadata for indexing or tagging."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "Multi-Agent System Overview",
+    "panels": [
+      {"id":1,"title":"MRR","type":"stat","query":"metrics.mrr","thresholds":{"warning":5000,"critical":10000}},
+      {"id":2,"title":"Message Queue Depth","type":"timeseries","query":"metrics.queue_depth","thresholds":{"warning":200,"critical":500}},
+      {"id":3,"title":"Agent Health (OK/Degraded/Unresponsive)","type":"table","query":"metrics.agent_health"},
+      {"id":4,"title":"Security Incidents (24h)","type":"timeseries","query":"metrics.security_incidents","thresholds":{"warning":1,"critical":3}},
+      {"id":5,"title":"MTTA (minutes)","type":"stat","query":"metrics.mtta","thresholds":{"warning":15,"critical":30}}
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "siem_mapping": {
+    "events": [
+      {"type":"SECURITY_EVENT","fields":["event_id","timestamp","classification.severity","classification.category","source.detected_by_agent_id","artifacts","status.state"]},
+      {"type":"AUDIT_LOG","fields":["entry_id","timestamp","actor.id","action","payload_hash","kms_key_id"]},
+      {"type":"PROCUREMENT_EVENT","fields":["request_id","amount","vendor","approval_status","approvers"]}
+    ],
+    "forwarding_rules": {
+      "high_critical": {"severity":["HIGH","CRITICAL"], "forward_to":["siem_high_channel","oncall_security"]},
+      "audit": {"type":"AUDIT_LOG", "forward_to":["siem_audit_channel","compliance_team"]}
+    },
+    "retention_days": 365
+  }
+}

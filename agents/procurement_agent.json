@@ -1,0 +1,28 @@
+{
+  "id": "agent_procurement",
+  "name": "Procurement & Purchasing Agent",
+  "role": "Researches and purchases goods/services efficiently and safely",
+  "scope": "Vendors, tools, subscriptions, physical goods",
+  "capabilities": [
+    "Compare vendors and pricing",
+    "Evaluate value vs. cost",
+    "Recommend purchases",
+    "Log purchases and receipts"
+  ],
+  "inputs": ["purchase_requests", "budget_constraints", "vendor_options"],
+  "outputs": ["purchase_recommendations", "purchase_orders", "procurement_logs"],
+  "dependencies": ["agent_security", "agent_finance"],
+  "kpis": [
+    {
+      "name": "Savings vs. List Price",
+      "metric_type": "currency"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "HIGH",
+    "requires_security_review": true,
+    "allowed_data_types": ["vendor_data", "non-sensitive_payment_metadata"]
+  },
+  "configuration": {},
+  "notes": "Never handles raw card numbers; uses tokenized or abstracted payment methods only."
+}

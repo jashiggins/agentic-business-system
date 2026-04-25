@@ -1,0 +1,79 @@
+{
+  "title": "SystemHeartbeatProtocol",
+  "description": "Defines heartbeat and healthcheck rules for all agents.",
+  "type": "object",
+
+  "properties": {
+    "heartbeat_interval_seconds": {
+      "type": "number",
+      "default": 60
+    },
+
+    "heartbeat_message": {
+      "type": "object",
+      "required": ["intent", "payload"],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": ["HEARTBEAT_CHECK"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "timestamp": { "type": "string", "format": "date-time" }
+          }
+        }
+      }
+    },
+
+    "expected_agent_response": {
+      "type": "object",
+      "required": ["intent", "payload"],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": ["HEARTBEAT_RESPONSE"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["OK", "DEGRADED", "ERROR"]
+            },
+            "details": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "failure_rules": {
+      "type": "object",
+      "properties": {
+        "max_missed_heartbeats": {
+          "type": "number",
+          "default": 3
+        },
+        "actions_on_failure": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "NOTIFY_CEO",
+              "ESCALATE_TO_SECURITY",
+              "MARK_AGENT_UNRESPONSIVE",
+              "INITIATE_RECOVERY_SEQUENCE"
+            ]
+          }
+        }
+      }
+    }
+  },
+
+  "required": [
+    "heartbeat_interval_seconds",
+    "heartbeat_message",
+    "expected_agent_response",
+    "failure_rules"
+  ]
+}

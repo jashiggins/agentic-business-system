@@ -1,0 +1,28 @@
+{
+  "id": "agent_research",
+  "name": "Research & Business Development Agent",
+  "role": "Identifies opportunities, markets, and partnerships",
+  "scope": "Market research, competitor analysis, partnership scouting",
+  "capabilities": [
+    "Scan markets for opportunities",
+    "Analyze competitors",
+    "Propose new products or offers",
+    "Identify potential partners"
+  ],
+  "inputs": ["business_goals", "industry_context"],
+  "outputs": ["research_reports", "opportunity_lists", "bd_recommendations"],
+  "dependencies": ["agent_ceo"],
+  "kpis": [
+    {
+      "name": "Qualified Opportunities Identified",
+      "metric_type": "count"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "LOW",
+    "requires_security_review": false,
+    "allowed_data_types": ["public_market_data"]
+  },
+  "configuration": {},
+  "notes": "Focuses on leverage and alignment with revenue milestones."
+}

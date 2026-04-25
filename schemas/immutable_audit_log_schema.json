@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ImmutableAuditLogEntry",
+  "type": "object",
+  "required": ["entry_id", "timestamp", "actor", "action", "payload_hash", "prev_hash", "signature", "kms_key_id"],
+  "properties": {
+    "entry_id": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "actor": {
+      "type": "object",
+      "properties": {
+        "type": {"type": "string"},
+        "id": {"type": "string"}
+      }
+    },
+    "action": {"type": "string"},
+    "payload": {"type": "object"},
+    "payload_hash": {"type": "string"},
+    "prev_hash": {"type": "string"},
+    "signature": {"type": "string"},
+    "kms_key_id": {"type": "string"},
+    "notes": {"type": "string"}
+  }
+}

@@ -1,0 +1,36 @@
+SYSTEM ARCHITECTURE (HIGH LEVEL)
+
+                 [ USER ]
+                    │
+                    │ (only talks to)
+                    ▼
+               [ agent_ceo ]
+                    │
+     ┌──────────────┼─────────────────────────────┐
+     │              │                             │
+     ▼              ▼                             ▼
+[ agent_security ] [ agent_finance ]       [ agent_marketing ]
+        │                  │                       │
+        │                  │                       │
+        │                  │                       ▼
+        │                  │               [ agent_automation ]
+        │                  │
+        │                  ▼
+        │           [ agent_tax ]
+        │
+        ▼
+[ agent_privacy ]      [ agent_audit ]
+        │                     ▲
+        └────────────┬────────┘
+                     │
+   ┌─────────────────┼───────────────────────┐
+   ▼                 ▼                       ▼
+[ agent_unified_comms ]           [ agent_customer_service ]
+   │
+   ▼
+[ external comms channels ]
+
+Other branches:
+- [ agent_procurement ] → works with security + finance
+- [ agent_research ] → reports to CEO
+- [ agent_grants ] → works with CEO + finance

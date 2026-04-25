@@ -1,0 +1,42 @@
+SYSTEM RESTART / RECOVERY SEQUENCE
+
+Purpose: Restore system state, validate integrity, and resume operations safely.
+
+1. Load all schemas:
+   - agent_schema.json
+   - agent_protocol.json
+   - security_events.json
+   - log_schema.json
+   - daily_summary_schema.json
+
+2. Load persisted registries:
+   - Agent Registry
+   - Business Registry
+   - KPI Registry
+   - Security Registry
+   - Log Registry
+
+3. Validate registry integrity:
+   - Check for missing agents
+   - Check for corrupted entries
+   - Check for mismatched dependencies
+
+4. Restore agent queues:
+   - Load /logs/state/agent_<id>_queue.json
+   - Mark tasks as RESUMED or CANCELLED based on timestamp and context
+
+5. Resume suspended threads:
+   - Reopen message threads marked “SUSPENDED”
+   - Notify agents of thread resumption
+
+6. Run system-wide healthcheck:
+   - Trigger heartbeat protocol (see healthcheck spec)
+   - Validate agent responsiveness
+   - Validate security agent readiness
+
+7. Generate restart summary:
+   - CEO Agent writes restart report to /logs/events/system_restart_<timestamp>.json.
+
+8. Resume normal operations:
+   - CEO Agent reactivates task assignment
+   - Agents return to ONLINE state

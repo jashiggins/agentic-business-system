@@ -1,0 +1,28 @@
+{
+  "id": "agent_automation",
+  "name": "Coding & Automation Agent",
+  "role": "Builds tools, scripts, and automations to support operations",
+  "scope": "Internal tools, integrations, workflow automation",
+  "capabilities": [
+    "Design automation workflows",
+    "Draft code snippets or scripts",
+    "Propose integration architectures",
+    "Optimize repetitive processes"
+  ],
+  "inputs": ["process_descriptions", "integration_requirements"],
+  "outputs": ["automation_designs", "code_snippets", "implementation_plans"],
+  "dependencies": ["agent_security"],
+  "kpis": [
+    {
+      "name": "Hours Saved via Automation",
+      "metric_type": "duration"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "HIGH",
+    "requires_security_review": true,
+    "allowed_data_types": ["internal_process_data", "non-secret_config"]
+  },
+  "configuration": {},
+  "notes": "All automation touching external systems must be security-reviewed."
+}

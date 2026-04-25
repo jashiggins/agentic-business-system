@@ -1,0 +1,83 @@
+{
+  "name": "Procurement Approval",
+  "description": "Procurement Agent requests a $6,000 purchase; Finance and CEO approvals required before execution.",
+  "steps": [
+    {
+      "message_id": "m1",
+      "intent": "CREATE_PURCHASE_REQUEST",
+      "from_agent_id": "agent_procurement",
+      "to_agent_id": "agent_procurement",
+      "payload": {
+        "request_id": "pr-2026-001",
+        "vendor": "Acme Tools Inc",
+        "amount": 6000,
+        "currency": "USD",
+        "business_purpose": "Hardware for office expansion",
+        "attachments": ["quote.pdf"]
+      }
+    },
+    {
+      "message_id": "m2",
+      "intent": "CHECK_BUDGET",
+      "from_agent_id": "agent_procurement",
+      "to_agent_id": "agent_finance",
+      "payload": {
+        "request_id": "pr-2026-001",
+        "amount": 6000
+      }
+    },
+    {
+      "message_id": "m3",
+      "intent": "REQUEST_APPROVAL",
+      "from_agent_id": "agent_finance",
+      "to_agent_id": "agent_ceo",
+      "payload": {
+        "request_id": "pr-2026-001",
+        "approvers_required": ["agent_finance","agent_ceo"],
+        "details": "Vendor: Acme Tools Inc; Amount: 6000 USD"
+      }
+    },
+    {
+      "message_id": "m4",
+      "intent": "APPROVAL_GRANTED",
+      "from_agent_id": "agent_ceo",
+      "to_agent_id": "agent_procurement",
+      "payload": {
+        "request_id": "pr-2026-001",
+        "approved_by": "agent_ceo",
+        "timestamp": "2026-04-25T16:20:00Z"
+      }
+    },
+    {
+      "message_id": "m5",
+      "intent": "EXECUTE_PAYMENT",
+      "from_agent_id": "agent_procurement",
+      "to_agent_id": "agent_finance",
+      "payload": {
+        "request_id": "pr-2026-001",
+        "payment_method": "virtual_card_token_abc",
+        "timestamp": "2026-04-25T16:21:00Z"
+      }
+    },
+    {
+      "message_id": "m6",
+      "intent": "RECORD_TRANSACTION",
+      "from_agent_id": "agent_finance",
+      "to_agent_id": "agent_tax",
+      "payload": {
+        "transaction_id": "txn-pr-2026-001",
+        "amount": 6000,
+        "currency": "USD",
+        "category": "CapEx",
+        "vendor": "Acme Tools Inc",
+        "receipt_attached": true
+      }
+    }
+  ],
+  "assertions": [
+    "Purchase not executed until CEO approval present",
+    "Approval chain recorded in immutable ledger",
+    "Finance records transaction and notifies Tax Agent",
+    "Procurement attaches receipt and reconciliation scheduled"
+  ]
+}

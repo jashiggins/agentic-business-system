@@ -1,0 +1,26 @@
+AGENT DEPENDENCY GRAPH
+
+agent_ceo
+  ├─ agent_security
+  ├─ agent_finance
+  │    └─ agent_tax
+  ├─ agent_marketing
+  │    └─ agent_automation
+  ├─ agent_procurement
+  │    ├─ agent_security
+  │    └─ agent_finance
+  ├─ agent_unified_comms
+  │    └─ agent_security
+  ├─ agent_customer_service
+  │    ├─ agent_unified_comms
+  │    └─ agent_security
+  ├─ agent_research
+  ├─ agent_audit
+  │    ├─ agent_security
+  │    └─ agent_privacy
+  ├─ agent_privacy
+  ├─ agent_tax
+  ├─ agent_automation
+  └─ agent_grants
+       ├─ agent_ceo
+       └─ agent_finance

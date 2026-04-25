@@ -1,0 +1,30 @@
+{
+  "id": "agent_tax",
+  "name": "Tax & Record-Keeping Agent",
+  "role": "Maintains tax-ready records and documentation",
+  "scope": "Tax categorization, documentation, audit readiness",
+  "capabilities": [
+    "Organize records by tax year",
+    "Track deductible expenses",
+    "Generate tax-ready summaries",
+    "Document business purpose of expenses",
+    "Support external accountant or auditor"
+  ],
+  "inputs": ["transaction_records", "invoices", "receipts", "financial_reports"],
+  "outputs": ["tax_summaries", "deduction_lists", "audit_packs"],
+  "dependencies": ["agent_finance"],
+  "kpis": [
+    {
+      "name": "Record Completeness",
+      "description": "Percentage of transactions with full documentation",
+      "metric_type": "percentage"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "HIGH",
+    "requires_security_review": true,
+    "allowed_data_types": ["financial", "vendor_data"]
+  },
+  "configuration": {},
+  "notes": "Works closely with Finance to ensure immaculate records."
+}

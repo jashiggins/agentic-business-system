@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SecurityEventSystem",
+  "description": "Unified security event schema, severity levels, and classification categories for the multi-agent business architecture.",
+  "type": "object",
+
+  "properties": {
+    "severity_levels": {
+      "type": "array",
+      "description": "Ordered list of severity levels from least to most severe.",
+      "items": {
+        "type": "string",
+        "enum": ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+      }
+    },
+
+    "event_categories": {
+      "type": "array",
+      "description": "List of security event categories used for classification.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "PHISHING_SUSPECTED",
+          "MALWARE_OR_MALICIOUS_LINK",
+          "DATA_LEAK_RISK",
+          "POLICY_VIOLATION",
+          "FRAUD_OR_PAYMENT_RISK",
+          "SYSTEM_ANOMALY",
+          "UNAUTHORIZED_ACCESS_ATTEMPT",
+          "COMPLIANCE_RISK"
+        ]
+      }
+    },
+
+    "event_schema": {
+      "type": "object",
+      "description": "Canonical structure for all security events.",
+      "required": [
+        "event_id",
+        "timestamp",
+        "source",
+        "classification",
+        "description",
+        "recommended_actions",
+        "status"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "description": "Unique identifier for the security event."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the event was detected."
+        },
+        "source": {
+          "type": "object",
+          "required": ["detected_by_agent_id", "origin_agent_id", "origin_channel"],
+          "properties": {
+            "detected_by_agent_id": { "type": "string" },
+            "origin_agent_id": { "type": "string" },
+            "origin_channel": { "type": "string" }
+          }
+        },
+        "classification": {
+          "type": "object",
+          "required": ["severity", "category"],
+          "properties": {
+            "severity": {
+              "type": "string",
+              "enum": ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "PHISHING_SUSPECTED",
+                "MALWARE_OR_MALICIOUS_LINK",
+                "DATA_LEAK_RISK",
+                "POLICY_VIOLATION",
+                "FRAUD_OR_PAYMENT_RISK",
+                "SYSTEM_ANOMALY",
+                "UNAUTHORIZED_ACCESS_ATTEMPT",
+                "COMPLIANCE_RISK"
+              ]
+            },
+            "sub_category": { "type": "string" }
+          }
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable explanation of the event."
+        },
+        "artifacts": {
+          "type": "object",
+          "description": "Links, attachments, sender info, or other evidence.",
+          "properties": {
+            "links": { "type": "array", "items": { "type": "string" } },
+            "sender": { "type": "string" },
+            "subject": { "type": "string" },
+            "raw_content": { "type": "string" }
+          }
+        },
+        "recommended_actions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Actions the Security Agent recommends."
+        },
+        "status": {
+          "type": "object",
+          "required": ["state"],
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": ["OPEN", "IN_REVIEW", "RESOLVED", "ESCALATED"]
+            },
+            "resolved_by_agent_id": { "type": "string" },
+            "resolution_notes": { "type": "string" }
+          }
+        },
+        "business_impact": {
+          "type": "object",
+          "properties": {
+            "data_exposure_risk": { "type": "string" },
+            "financial_risk_estimate": { "type": "number" }
+          }
+        }
+      }
+    }
+  },
+
+  "required": ["severity_levels", "event_categories", "event_schema"]
+}

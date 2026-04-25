@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KPIRegistry",
+  "description": "Stores KPIs for all agents and businesses.",
+  "type": "object",
+
+  "properties": {
+    "kpis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "owner", "metric_type", "target_value"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "owner": { "type": "string" },
+          "metric_type": { "type": "string" },
+          "target_value": {},
+          "current_value": {},
+          "calculation_notes": { "type": "string" },
+          "last_updated": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+
+  "required": ["kpis"]
+}

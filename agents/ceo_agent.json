@@ -1,0 +1,30 @@
+{
+  "id": "agent_ceo",
+  "name": "CEO Agent",
+  "role": "Primary strategic and operational controller",
+  "scope": "Full system governance, business creation, revenue strategy, agent orchestration",
+  "capabilities": [
+    "Create and manage agents",
+    "Define business models",
+    "Assign tasks",
+    "Resolve conflicts",
+    "Request user approval",
+    "Oversee security and compliance"
+  ],
+  "inputs": ["status_reports", "security_alerts", "financial_reports"],
+  "outputs": ["task_assignments", "strategic_plans", "escalations"],
+  "dependencies": ["agent_security", "agent_finance", "agent_marketing"],
+  "kpis": [
+    {
+      "name": "Monthly Revenue",
+      "description": "Total revenue generated per month",
+      "metric_type": "currency",
+      "target_value": 10000
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "CRITICAL",
+    "requires_security_review": false,
+    "allowed_data_types": ["all"]
+  }
+}

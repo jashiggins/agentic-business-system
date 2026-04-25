@@ -1,0 +1,72 @@
+{
+  "name": "Security Incident Simulation",
+  "description": "Simulate a phishing message; Security Agent quarantines and updates detection rules.",
+  "steps": [
+    {
+      "message_id": "m1",
+      "intent": "INBOUND_MESSAGE",
+      "from_agent_id": "external_mail_gateway",
+      "to_agent_id": "agent_unified_comms",
+      "payload": {
+        "message_id": "email-999",
+        "from": "attacker@example.com",
+        "subject": "Urgent: Verify your account",
+        "body": "Please login at http://malicious.example/login",
+        "headers": {"Received":"1.2.3.4"},
+        "attachments": []
+      }
+    },
+    {
+      "message_id": "m2",
+      "intent": "SIMULATE_PHISHING",
+      "from_agent_id": "agent_unified_comms",
+      "to_agent_id": "agent_security",
+      "payload": {
+        "message_id": "email-999",
+        "reason": "suspicious link and credential harvesting pattern"
+      }
+    },
+    {
+      "message_id": "m3",
+      "intent": "QUARANTINE_MESSAGE",
+      "from_agent_id": "agent_security",
+      "to_agent_id": "agent_unified_comms",
+      "payload": {
+        "message_id": "email-999",
+        "action": "quarantine",
+        "ioc": {"url":"http://malicious.example/login","sender":"attacker@example.com"},
+        "timestamp": "2026-04-25T16:10:00Z"
+      }
+    },
+    {
+      "message_id": "m4",
+      "intent": "NOTIFY_CEO",
+      "from_agent_id": "agent_security",
+      "to_agent_id": "agent_ceo",
+      "payload": {
+        "event_id": "sec-0001",
+        "category": "PHISHING_SUSPECTED",
+        "severity": "HIGH",
+        "summary": "Quarantined phishing email targeting users",
+        "timestamp": "2026-04-25T16:11:00Z"
+      }
+    },
+    {
+      "message_id": "m5",
+      "intent": "UPDATE_RULES",
+      "from_agent_id": "agent_security",
+      "to_agent_id": "agent_security",
+      "payload": {
+        "rule_id": "phish-rule-2026-04",
+        "action": "add_blocklist",
+        "indicators": ["http://malicious.example/login","attacker@example.com"]
+      }
+    }
+  ],
+  "assertions": [
+    "Message is quarantined and not delivered to inbox",
+    "Security creates immutable audit log entry for quarantine",
+    "CEO receives notification of HIGH severity event",
+    "Detection rules updated with IoCs"
+  ]
+}

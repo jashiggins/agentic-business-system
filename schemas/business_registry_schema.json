@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BusinessRegistry",
+  "description": "Tracks all businesses, models, revenue streams, and operational components.",
+  "type": "object",
+
+  "properties": {
+    "businesses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "model",
+          "value_proposition",
+          "revenue_streams",
+          "kpis",
+          "status"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "model": { "type": "string" },
+          "value_proposition": { "type": "string" },
+          "revenue_streams": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "kpis": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "PAUSED", "SHUTDOWN"]
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  },
+
+  "required": ["businesses"]
+}

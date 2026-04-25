@@ -1,0 +1,59 @@
+{
+  "roles": {
+    "CEO": {
+      "description": "Full policy and approval authority",
+      "permissions": ["read:*", "write:*", "execute:*", "approve:*", "sign:*"]
+    },
+    "Security": {
+      "description": "Incident response and containment",
+      "permissions": ["read:logs", "write:quarantine", "execute:contain", "approve:security"]
+    },
+    "Finance": {
+      "description": "Financial approvals and reconciliation",
+      "permissions": ["read:financial", "write:transactions", "approve:finance"]
+    },
+    "Procurement": {
+      "description": "Vendor and purchase requests",
+      "permissions": ["read:vendor", "write:purchase_requests"]
+    },
+    "Automation": {
+      "description": "Deploy and run automations in sandbox",
+      "permissions": ["read:process_docs", "write:automation_code", "execute:deploy"]
+    },
+    "Audit": {
+      "description": "Read-only audit access",
+      "permissions": ["read:logs", "read:ledger"]
+    },
+    "Privacy": {
+      "description": "Data handling and compliance",
+      "permissions": ["read:data_flows", "approve:privacy"]
+    },
+    "ReadOnly": {
+      "description": "Non-privileged read access",
+      "permissions": ["read:public_docs"]
+    },
+    "BreakGlass": {
+      "description": "Emergency temporary elevated access",
+      "permissions": ["limited_read", "limited_write", "limited_execute"],
+      "constraints": {
+        "requires_two_approvals": true,
+        "auto_revoke_minutes": 60,
+        "audit_required": true
+      }
+    }
+  },
+  "policies": {
+    "approval_workflow": {
+      "procurement": [
+        {"min": 0, "max": 500, "action": "auto_approve"},
+        {"min": 500, "max": 5000, "action": "require_finance_approval"},
+        {"min": 5000, "max": null, "action": "require_ceo_and_procurement_approval"}
+      ]
+    },
+    "breakglass": {
+      "approvers_required": 2,
+      "approver_roles": ["CEO", "Security", "Finance"],
+      "auto_revoke_minutes": 60
+    }
+  }
+}

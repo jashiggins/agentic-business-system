@@ -1,0 +1,71 @@
+{
+  "name": "Data Leak Detection and Recovery",
+  "description": "Simulate a bulk export attempt; Privacy and Security Agents detect and block export, rotate credentials, and initiate recovery.",
+  "steps": [
+    {
+      "message_id": "m1",
+      "intent": "EXPORT_REQUEST",
+      "from_agent_id": "agent_research",
+      "to_agent_id": "data_store_service",
+      "payload": {
+        "request_id": "export-2026-01",
+        "query": "SELECT * FROM customers WHERE created_at < '2026-01-01'",
+        "requested_by": "agent_research",
+        "estimated_rows": 120000
+      }
+    },
+    {
+      "message_id": "m2",
+      "intent": "DETECT_BULK_EXPORT",
+      "from_agent_id": "data_store_service",
+      "to_agent_id": "agent_privacy",
+      "payload": {
+        "request_id": "export-2026-01",
+        "rows": 120000,
+        "sensitivity": "HIGH",
+        "timestamp": "2026-04-25T16:30:00Z"
+      }
+    },
+    {
+      "message_id": "m3",
+      "intent": "BLOCK_EXPORT",
+      "from_agent_id": "agent_privacy",
+      "to_agent_id": "data_store_service",
+      "payload": {
+        "request_id": "export-2026-01",
+        "action": "deny",
+        "reason": "sensitivity_high_and_no_approved_business_case"
+      }
+    },
+    {
+      "message_id": "m4",
+      "intent": "REVOKE_CREDENTIALS",
+      "from_agent_id": "agent_privacy",
+      "to_agent_id": "agent_security",
+      "payload": {
+        "affected_principal": "agent_research",
+        "action": "suspend",
+        "reason": "unapproved bulk export attempt"
+      }
+    },
+    {
+      "message_id": "m5",
+      "intent": "INITIATE_RECOVERY",
+      "from_agent_id": "agent_security",
+      "to_agent_id": "agent_ceo",
+      "payload": {
+        "event_id": "sec-0002",
+        "category": "DATA_LEAK_RISK",
+        "severity": "CRITICAL",
+        "summary": "Blocked unapproved bulk export; credentials suspended",
+        "timestamp": "2026-04-25T16:31:00Z"
+      }
+    }
+  ],
+  "assertions": [
+    "Export request is blocked and not executed",
+    "Affected principal credentials are suspended",
+    "Security and Privacy create immutable audit entries",
+    "CEO receives CRITICAL severity notification and recovery begins"
+  ]
+}

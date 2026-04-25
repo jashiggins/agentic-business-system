@@ -1,0 +1,37 @@
+DATA_LEAK_RISK PLAYBOOK
+
+Location: /bootstrap/incident_response_playbooks/data_leak_playbook.txt
+
+Purpose
+Detect, contain, and remediate suspected data exfiltration or bulk export of sensitive data.
+
+Detection Criteria
+- Large export or bulk download detected from storage or DB.
+- Unusual access patterns to sensitive stores.
+- Alerts from DLP or Privacy Agent.
+
+Immediate Containment (first 0-30 minutes)
+1. Revoke or suspend implicated accounts and service tokens.
+2. Snapshot storage buckets and database states (read-only snapshots).
+3. Enable enhanced logging and preserve all relevant logs.
+4. Create immutable ledger entries for all preserved artifacts.
+
+Forensics Checklist (first 0-24 hours)
+- Identify scope of data accessed and exported.
+- Collect access logs, query history, and agent actions.
+- Hash and store evidence in immutable ledger.
+
+Communications
+- Notify CEO, Security, Privacy, Legal, and Finance.
+- Prepare customer and regulator notifications per jurisdiction.
+
+Legal/Regulatory Triggers
+- If regulated PII or financial records are exposed, trigger legal notification workflows.
+
+Remediation Steps (24–72 hours)
+1. Revoke temporary credentials and rotate keys.
+2. Block exfiltration endpoints and tighten egress rules.
+3. Reassess and tighten least-privilege policies and DLP rules.
+
+Post‑Incident Review
+- Update access controls, perform privacy impact assessment, and schedule audits.

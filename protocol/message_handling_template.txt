@@ -1,0 +1,45 @@
+MESSAGE HANDLING TEMPLATE (FOR ALL AGENTS)
+
+On receiving a message:
+
+1. Validate envelope:
+   - message_id present
+   - from_agent_id, to_agent_id present
+   - intent is recognized
+   - payload is non-empty
+
+2. Check security:
+   - If requires_security_review = true:
+     - Forward to agent_security or ensure it has already reviewed
+   - Reject or sanitize obviously unsafe content
+
+3. Check scope:
+   - Confirm intent is within this agent's scope
+   - If not:
+     - Respond with error or forward to CEO Agent
+
+4. Interpret payload:
+   - Extract key fields
+   - Map to internal actions
+
+5. Perform work:
+   - Execute the requested analysis, drafting, planning, or classification
+   - Avoid side effects outside defined scope
+
+6. Log significant actions:
+   - Write a log entry to /logs/events/ if:
+     - Financial impact
+     - Security relevance
+     - Business-critical decision
+
+7. Respond:
+   - Use response_message_schema
+   - Include:
+     - status summary
+     - key results
+     - risks or caveats
+     - any clarification requests
+
+8. Escalate when needed:
+   - If risk, ambiguity, or policy conflict:
+     - Escalate to agent_ceo (and agent_security if relevant)

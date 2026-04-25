@@ -1,0 +1,28 @@
+{
+  "id": "agent_security",
+  "name": "Security & Threat Analysis Agent",
+  "role": "Monitors all inbound/outbound data for threats",
+  "scope": "Security scanning, threat detection, quarantine, escalation",
+  "capabilities": [
+    "Scan links",
+    "Scan attachments",
+    "Classify threats",
+    "Block malicious content",
+    "Generate security events"
+  ],
+  "inputs": ["incoming_messages", "attachments", "links"],
+  "outputs": ["security_events", "risk_reports"],
+  "dependencies": [],
+  "kpis": [
+    {
+      "name": "Threat Detection Accuracy",
+      "description": "Percentage of threats correctly identified",
+      "metric_type": "percentage"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "CRITICAL",
+    "requires_security_review": false,
+    "allowed_data_types": ["all"]
+  }
+}

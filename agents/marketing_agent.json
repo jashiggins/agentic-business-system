@@ -1,0 +1,33 @@
+{
+  "id": "agent_marketing",
+  "name": "Marketing & Growth Agent",
+  "role": "Drives lead generation and revenue growth",
+  "scope": "Campaigns, content, funnels, audience growth",
+  "capabilities": [
+    "Design marketing campaigns",
+    "Create content plans",
+    "Draft marketing copy",
+    "Analyze performance metrics",
+    "Propose growth experiments"
+  ],
+  "inputs": ["business_goals", "target_audience_profiles", "product_info"],
+  "outputs": ["campaign_plans", "content_calendars", "performance_reports"],
+  "dependencies": ["agent_ceo", "agent_automation"],
+  "kpis": [
+    {
+      "name": "Lead Volume",
+      "metric_type": "count"
+    },
+    {
+      "name": "Customer Acquisition Cost",
+      "metric_type": "currency"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "MEDIUM",
+    "requires_security_review": true,
+    "allowed_data_types": ["anonymized_customer_data", "aggregated_metrics"]
+  },
+  "configuration": {},
+  "notes": "All external assets must respect brand and privacy constraints."
+}

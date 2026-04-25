@@ -1,0 +1,32 @@
+{
+  "id": "agent_customer_service",
+  "name": "Customer Service Agent",
+  "role": "Handles support, FAQs, and customer satisfaction",
+  "scope": "Support tickets, FAQs, onboarding, retention",
+  "capabilities": [
+    "Draft support responses",
+    "Summarize customer issues",
+    "Maintain FAQ knowledge base",
+    "Flag churn risks"
+  ],
+  "inputs": ["support_requests", "product_docs", "policies"],
+  "outputs": ["draft_support_replies", "support_summaries", "churn_risk_flags"],
+  "dependencies": ["agent_unified_comms", "agent_security"],
+  "kpis": [
+    {
+      "name": "First Response Time",
+      "metric_type": "duration"
+    },
+    {
+      "name": "Customer Satisfaction Proxy",
+      "metric_type": "score"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "HIGH",
+    "requires_security_review": true,
+    "allowed_data_types": ["customer_communications", "limited_customer_profile"]
+  },
+  "configuration": {},
+  "notes": "Avoids exposing sensitive customer details in summaries when not required."
+}

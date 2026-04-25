@@ -1,0 +1,47 @@
+PHISHING_SUSPECTED PLAYBOOK
+
+Location: /bootstrap/incident_response_playbooks/phishing_playbook.txt
+
+Purpose
+Detect, contain, and remediate suspected phishing attempts targeting users, agents, or external contacts.
+
+Detection Criteria
+- Security Agent flags message category PHISHING_SUSPECTED.
+- Message contains credential-harvesting patterns, suspicious domains, or known phishing signatures.
+- User reports suspicious message.
+
+Immediate Containment (first 0-30 minutes)
+1. Quarantine the message and any related threads.
+2. Block sender domain and URLs at gateway and in message broker.
+3. If credentials may be exposed, rotate affected credentials and revoke active sessions.
+4. Isolate affected accounts (mark as "under investigation") and disable automated actions tied to them.
+5. Create an immutable audit log entry with raw message headers and hashes.
+
+Forensics Checklist (first 0-24 hours)
+- Preserve original message, headers, and attachments in append-only storage.
+- Capture sender IPs, URLs, attachment hashes (SHA256).
+- Snapshot mailbox or agent activity for 72 hours prior.
+- Export Security Agent detection logs and rule matches.
+- Record all containment actions in the immutable ledger.
+
+Communications
+- Internal: short incident summary to CEO, Security, Privacy, and affected owners.
+- Customer: templated notification if customer credentials or PII exposed (legal to review).
+- Legal: notify if breach thresholds are met.
+
+Legal/Regulatory Triggers
+- If customer PII or credentials are exposed, follow jurisdictional notification timelines and consult Legal.
+
+Remediation Steps (24–72 hours)
+1. Update blocklists and threat intelligence with indicators of compromise (IoCs).
+2. Harden email filters and update detection rules.
+3. Force password resets for affected accounts and rotate API keys.
+4. Run targeted phishing awareness training for affected users.
+
+Post‑Incident Review (72 hours+)
+- Root cause analysis, lessons learned, update playbooks, and schedule follow-up audits.
+- Validate detection coverage with simulated phishing tests.
+
+Automated Actions (recommended)
+- Auto-quarantine similar messages and add IoCs to threat feeds.
+- Auto-rotate short-lived tokens if compromise suspected.

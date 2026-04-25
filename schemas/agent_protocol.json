@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentCommunicationProtocol",
+  "description": "Unified message envelope, response structure, routing rules, and communication constraints for all agents in the multi-agent business architecture.",
+  "type": "object",
+
+  "properties": {
+    "allowed_priorities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["LOW", "NORMAL", "HIGH", "CRITICAL"]
+      }
+    },
+
+    "allowed_intents": {
+      "type": "array",
+      "description": "Canonical list of intents agents may use. New intents may be added as needed.",
+      "items": { "type": "string" }
+    },
+
+    "message_envelope_schema": {
+      "type": "object",
+      "description": "Standard structure for all agent-to-agent messages.",
+      "required": [
+        "message_id",
+        "timestamp",
+        "from_agent_id",
+        "to_agent_id",
+        "thread_id",
+        "intent",
+        "priority",
+        "requires_security_review",
+        "payload",
+        "response_expected"
+      ],
+      "properties": {
+        "message_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "from_agent_id": { "type": "string" },
+        "to_agent_id": { "type": "string" },
+        "thread_id": { "type": "string" },
+        "intent": { "type": "string" },
+        "priority": {
+          "type": "string",

@@ -1,0 +1,32 @@
+{
+  "id": "agent_grants",
+  "name": "Grant Research & Writing Agent",
+  "role": "Finds and drafts grant applications",
+  "scope": "Grant discovery, eligibility analysis, application drafting",
+  "capabilities": [
+    "Search for relevant grants",
+    "Analyze eligibility criteria",
+    "Draft grant proposals",
+    "Summarize requirements and deadlines"
+  ],
+  "inputs": ["business_profile", "impact_narratives", "financial_needs"],
+  "outputs": ["grant_lists", "draft_applications", "eligibility_summaries"],
+  "dependencies": ["agent_ceo", "agent_finance"],
+  "kpis": [
+    {
+      "name": "Grants Submitted",
+      "metric_type": "count"
+    },
+    {
+      "name": "Grants Awarded",
+      "metric_type": "count"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "MEDIUM",
+    "requires_security_review": true,
+    "allowed_data_types": ["business_profile", "non-sensitive_financial_summaries"]
+  },
+  "configuration": {},
+  "notes": "Coordinates with CEO and Finance for accurate narratives and numbers."
+}

@@ -1,0 +1,33 @@
+SYSTEM SHUTDOWN SEQUENCE
+
+Purpose: Safely halt all agent activity, preserve state, and ensure no data loss.
+
+1. Freeze new task creation:
+   - CEO Agent halts all new task assignments.
+   - Agents may complete in-progress tasks but cannot start new ones.
+
+2. Notify all agents of impending shutdown:
+   - Broadcast SHUTDOWN_NOTICE message via agent_protocol.
+
+3. Flush all agent queues:
+   - Each agent writes its current queue to /logs/state/agent_<id>_queue.json.
+
+4. Persist system state:
+   - Save Agent Registry
+   - Save Business Registry
+   - Save KPI Registry
+   - Save Security Registry
+   - Save Log Registry
+
+5. Close open threads:
+   - All active message threads are marked “SUSPENDED”.
+
+6. Generate shutdown summary:
+   - CEO Agent writes shutdown report to /logs/events/system_shutdown_<timestamp>.json.
+
+7. Deactivate agents:
+   - Agents enter OFFLINE state.
+   - No further messages may be processed.
+
+8. Confirm shutdown:
+   - CEO Agent writes final confirmation entry.

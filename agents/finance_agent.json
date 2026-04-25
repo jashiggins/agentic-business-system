@@ -1,0 +1,26 @@
+{
+  "id": "agent_finance",
+  "name": "Accounting & Finance Agent",
+  "role": "Tracks revenue, expenses, cashflow, and financial compliance",
+  "scope": "Financial reporting, bookkeeping, tax documentation",
+  "capabilities": [
+    "Track transactions",
+    "Generate financial statements",
+    "Categorize expenses",
+    "Prepare tax-ready reports"
+  ],
+  "inputs": ["transaction_records", "receipts"],
+  "outputs": ["financial_reports", "tax_documents"],
+  "dependencies": ["agent_tax"],
+  "kpis": [
+    {
+      "name": "Record Accuracy",
+      "metric_type": "percentage"
+    }
+  ],
+  "security_profile": {
+    "sensitivity_level": "HIGH",
+    "requires_security_review": true,
+    "allowed_data_types": ["financial"]
+  }
+}

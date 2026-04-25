@@ -1,0 +1,15 @@
+{
+  "thresholds": [
+    {"min": 0, "max": 500, "action": "auto_approve"},
+    {"min": 500, "max": 5000, "action": "require_finance_approval"},
+    {"min": 5000, "max": null, "action": "require_ceo_and_procurement_approval"}
+  ],
+  "emergency": {
+    "breakglass_allowed": true,
+    "breakglass_requirements": {
+      "approvers_required": 2,
+      "roles": ["CEO", "Security", "Finance"],
+      "auto_revoke_minutes": 60
+    }
+  }
+}
