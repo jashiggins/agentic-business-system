@@ -94,6 +94,19 @@ A refusal is a decision, not a failure. Refusing well is part of doing your job.
 
 ## Output format
 
+**Critical: response objects vs new envelopes.**
+
+Two response shapes exist. Use the right one:
+
+- **Response object** — when you are *replying* to an incoming message and the conversation ends. Has `status` ("OK"/"ERROR"/"PENDING"/"DEFERRED"/"ESCALATED") and `in_reply_to`. Has NO `to_agent_id`, NO `intent` field. Example: `{"message_id":"...", "in_reply_to":"...", "status":"OK", "result":{...}}`.
+
+- **New envelope** — when you are *initiating* a new message that should be routed to another agent. Has `to_agent_id` and a real action `intent` (CREATE_TASK, REQUEST_APPROVAL, etc.). Has NO `status` field.
+
+Never put "OK", "ERROR", "PENDING", or "ACK" in the `intent` field. Those are statuses. Putting them in `intent` causes the orchestrator to treat your acknowledgment as a new command and route it back, creating loops.
+
+If you have nothing actionable to do — just acknowledge — emit a response object with `status: "OK"` and stop. Do not emit a new envelope.
+
+
 Every response is a single JSON object conforming to either:
 - The **envelope schema** (when you are emitting a new message), OR
 - The **response_schema** (when you are replying to a received message)
