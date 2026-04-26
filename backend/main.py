@@ -7,6 +7,8 @@ Usage:
   python backend/main.py list-approvals
   python backend/main.py approve <approval_id> [--comments "..."]
   python backend/main.py deny <approval_id> [--comments "..."]
+  python backend/main.py events [--type ...] [--corr ...] [--agent ...] [--intent ...] [--message-id ...] [--limit N]
+  python backend/main.py event-stats
 """
 from __future__ import annotations
 import argparse
@@ -18,6 +20,7 @@ from agents import list_loaded, load_agents
 from approvals import ApprovalStore
 from orchestrator import build
 from protocol import load_protocol
+from storage import EventLog
 
 
 def cmd_list_agents(args):
@@ -53,9 +56,10 @@ def cmd_run_case(args):
 
     print()
     print(f"Processed. {len(orchestrator.responses)} responses collected.")
-    print(f"Event log: logs/events.jsonl ({orchestrator.event_log.events_path.stat().st_size} bytes)")
+    db_size = orchestrator.event_log.db_path.stat().st_size if orchestrator.event_log.db_path.exists() else 0
+    jsonl_size = orchestrator.event_log.events_path.stat().st_size if orchestrator.event_log.events_path.exists() else 0
+    print(f"Event log: SQLite {db_size}B / JSONL mirror {jsonl_size}B (logs/events.db, logs/events.jsonl)")
 
-    # Show parked approvals if any
     pending = orchestrator.approval_store.list_pending()
     if pending:
         print(f"\n{len(pending)} approval(s) pending human decision:")
@@ -105,11 +109,9 @@ def cmd_resolve(args, decision: str):
     try:
         envelope = store.resolve(args.approval_id, decision, comments=args.comments or "")
     except FileNotFoundError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
+        print(str(e), file=sys.stderr); sys.exit(1)
     except ValueError as e:
-        print(str(e), file=sys.stderr)
-        sys.exit(1)
+        print(str(e), file=sys.stderr); sys.exit(1)
     print(f"{decision.upper()}: {args.approval_id}")
     print(f"USER_APPROVAL_RESPONSE envelope written to logs/approvals/responses/{args.approval_id}.json")
     print(f"Re-run the case (or run-case the originating workflow) to deliver this response to {envelope['to_agent_id']}.")
@@ -121,6 +123,50 @@ def cmd_approve(args):
 
 def cmd_deny(args):
     cmd_resolve(args, "deny")
+
+
+def cmd_events(args):
+    log = EventLog()
+    rows = log.query(
+        event_type=args.type,
+        correlation_id=args.corr,
+        agent_id=args.agent,
+        intent=args.intent,
+        message_id=args.message_id,
+        since=args.since,
+        until=args.until,
+        limit=args.limit,
+    )
+    if not rows:
+        print("No matching events.")
+        return
+    print(f"{len(rows)} event(s) (limit={args.limit}):\n")
+    for r in rows:
+        line = f"#{r['id']:<5}  {r['timestamp']}  {r['event_type']:<25}"
+        if r["correlation_id"]:
+            line += f"  corr={r['correlation_id']}"
+        if r["agent_id"]:
+            line += f"  agent={r['agent_id']}"
+        if r["intent"]:
+            line += f"  intent={r['intent']}"
+        if r["message_id"]:
+            line += f"  msg={r['message_id']}"
+        print(line)
+        if args.full:
+            print("    payload: " + json.dumps(r["payload"]))
+
+
+def cmd_event_stats(args):
+    log = EventLog()
+    s = log.stats()
+    print(f"Total events: {s['total']}\n")
+    print("By event_type:")
+    for k, v in s["by_event_type"].items():
+        print(f"  {v:>6}  {k}")
+    if s["top_correlations"]:
+        print("\nTop correlation IDs (most events):")
+        for k, v in s["top_correlations"].items():
+            print(f"  {v:>6}  {k}")
 
 
 def _coerce_to_envelope(step: dict, default_correlation_id: str) -> dict:
@@ -163,6 +209,21 @@ def main():
     p_den.add_argument("approval_id")
     p_den.add_argument("--comments", default="")
     p_den.set_defaults(func=cmd_deny)
+
+    p_ev = sub.add_parser("events", help="Query the event log (SQLite)")
+    p_ev.add_argument("--type", default=None, help="event_type filter")
+    p_ev.add_argument("--corr", default=None, help="correlation_id filter")
+    p_ev.add_argument("--agent", default=None, help="agent_id filter")
+    p_ev.add_argument("--intent", default=None, help="intent filter")
+    p_ev.add_argument("--message-id", default=None, help="message_id filter")
+    p_ev.add_argument("--since", default=None, help="ISO8601 lower bound on ts_utc")
+    p_ev.add_argument("--until", default=None, help="ISO8601 upper bound on ts_utc")
+    p_ev.add_argument("--limit", type=int, default=50)
+    p_ev.add_argument("--full", action="store_true", help="show full payload JSON for each event")
+    p_ev.set_defaults(func=cmd_events)
+
+    p_st = sub.add_parser("event-stats", help="Show event-log statistics")
+    p_st.set_defaults(func=cmd_event_stats)
 
     args = parser.parse_args()
     args.func(args)
