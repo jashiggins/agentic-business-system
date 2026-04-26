@@ -9,6 +9,7 @@ Usage:
   python backend/main.py deny <approval_id> [--comments "..."]
   python backend/main.py events [--type ...] [--corr ...] [--agent ...] [--intent ...] [--message-id ...] [--limit N]
   python backend/main.py event-stats
+  python backend/main.py sweep-approvals
 """
 from __future__ import annotations
 import argparse
@@ -44,6 +45,10 @@ def cmd_run_case(args):
     print(f"Mode: {args.mode}")
     print(f"Steps: {len(case['steps'])}")
     print()
+
+    # Auto-sweep expired approvals before run; their auto-resolved
+    # responses will be replayed by the orchestrator on startup.
+    _do_sweep(quiet=False)
 
     orchestrator = build(model_mode=args.mode, model_name=args.model)
 
@@ -123,6 +128,23 @@ def cmd_approve(args):
 
 def cmd_deny(args):
     cmd_resolve(args, "deny")
+
+
+def _do_sweep(quiet: bool = False):
+    """Run the expiry sweep, print summary unless quiet, return list of swept items."""
+    store = ApprovalStore()
+    swept = store.sweep_expired()
+    if swept and not quiet:
+        print(f"Auto-resolved {len(swept)} expired approval(s):")
+        for s in swept:
+            print(f"  - {s['approval_id']}: {s['decision'].upper()} (expires_at={s['expires_at']})")
+    return swept
+
+
+def cmd_sweep(args):
+    swept = _do_sweep(quiet=False)
+    if not swept:
+        print("No expired approvals to sweep.")
 
 
 def cmd_events(args):
@@ -224,6 +246,9 @@ def main():
 
     p_st = sub.add_parser("event-stats", help="Show event-log statistics")
     p_st.set_defaults(func=cmd_event_stats)
+
+    p_sw = sub.add_parser("sweep-approvals", help="Auto-resolve expired pending approvals using their default_on_expiry policy")
+    p_sw.set_defaults(func=cmd_sweep)
 
     args = parser.parse_args()
     args.func(args)
