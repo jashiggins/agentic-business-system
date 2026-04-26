@@ -8,12 +8,16 @@
       "from_agent_id": "external_mail_gateway",
       "to_agent_id": "agent_unified_comms",
       "payload": {
-        "message_id": "email-999",
+        "external_message_id": "email-999",
+        "channel": "email",
         "from": "attacker@example.com",
+        "to": ["support@yourcompany.com"],
         "subject": "Urgent: Verify your account",
         "body": "Please login at http://malicious.example/login",
-        "headers": {"Received":"1.2.3.4"},
-        "attachments": []
+        "received_at": "2026-04-25T16:09:00Z",
+        "headers": {"Received": "1.2.3.4"},
+        "attachments": [],
+        "urls_extracted": ["http://malicious.example/login"]
       }
     },
     {

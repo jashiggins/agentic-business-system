@@ -9,9 +9,10 @@
       "to_agent_id": "external_user",
       "payload": {
         "approval_id": "ua-test-001",
-        "context_summary": "Test approval for HITL flow verification",
+        "context_summary": "Test approval for HITL flow verification. Synthetic request that does not gate any real action.",
         "options": ["approve", "deny", "request_more_info"],
         "expires_at": "2026-04-27T00:00:00Z",
+        "requested_by": "agent_ceo",
         "related_request_id": "pr-test-001"
       }
     }

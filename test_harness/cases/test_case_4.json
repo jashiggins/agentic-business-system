@@ -12,7 +12,13 @@
         "vendor": "Acme Tools Inc",
         "amount": 6000,
         "currency": "USD",
-        "business_purpose": "Hardware for office expansion",
+        "business_purpose": "Hardware for office expansion to support headcount growth",
+        "requested_by": "agent_procurement",
+        "business_id": "main_saas",
+        "budget_bucket": "capex_q2",
+        "alternatives_considered": [
+          {"vendor": "Generic Supply Co", "amount": 7500, "reason_not_chosen": "Higher price, longer lead time"}
+        ],
         "attachments": ["quote.pdf"]
       }
     },
@@ -35,8 +41,13 @@
       "to_agent_id": "agent_ceo",
       "payload": {
         "request_id": "pr-2026-001",
+        "action_type": "purchase",
         "approvers_required": ["agent_finance", "agent_ceo", "external_user"],
-        "details": "Vendor: Acme Tools Inc; Amount: 6000 USD; Purpose: Hardware for office expansion"
+        "details": "Vendor: Acme Tools Inc; Amount: 6000 USD; Purpose: Hardware for office expansion",
+        "requested_by": "agent_finance",
+        "amount": 6000,
+        "currency": "USD",
+        "expires_at": "2026-04-27T16:20:00Z"
       }
     },
     {

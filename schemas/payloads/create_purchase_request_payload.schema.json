@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CreatePurchaseRequestPayload",
+  "description": "Payload for the CREATE_PURCHASE_REQUEST intent. Initiates a procurement workflow that triggers budget check and approval routing.",
+  "type": "object",
+  "required": [
+    "request_id",
+    "vendor",
+    "amount",
+    "currency",
+    "business_purpose",
+    "requested_by",
+    "business_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique procurement request identifier (e.g. 'pr-2026-001'). Duplicates are rejected."
+    },
+    "vendor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Vendor or supplier name. New vendors require VENDOR_RISK_REVIEW before first payment."
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Optional reference to an existing vendor record."
+    },
+    "amount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Requested spend amount."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "ISO 4217 currency code."
+    },
+    "business_purpose": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 1000,
+      "description": "Why this spend is needed. Vague purposes ('miscellaneous', 'supplies') trigger AUDIT_REVIEW_REQUEST."
+    },
+    "requested_by": {
+      "type": "string",
+      "pattern": "^(agent_[a-z_]+|external_user)$",
+      "description": "Originating agent or principal."
+    },
+    "business_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Business unit / cost center the spend will post against."
+    },
+    "budget_bucket": {
+      "type": "string",
+      "description": "Named budget allocation (e.g. 'capex_q2', 'opex_marketing'). If absent, Finance must approve as off-budget."
+    },
+    "needed_by": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional deadline by which the goods/services are needed."
+    },
+    "alternatives_considered": {
+      "type": "array",
+      "description": "Other vendors evaluated. Required for spends over $1,000 to demonstrate value evaluation.",
+      "items": {
+        "type": "object",
+        "required": ["vendor", "amount"],
+        "properties": {
+          "vendor": { "type": "string" },
+          "amount": { "type": "number" },
+          "reason_not_chosen": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "description": "References to supporting documents (quotes, specs, comparison sheets).",
+      "items": { "type": "string" }
+    },
+    "is_recurring": {
+      "type": "boolean",
+      "default": false,
+      "description": "True for subscriptions or recurring service contracts; downstream may apply different controls."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Spends over $1,000 require alternatives_considered to demonstrate value evaluation.",
+      "if": { "properties": { "amount": { "exclusiveMinimum": 1000 } } },
+      "then": { "required": ["alternatives_considered"] }
+    }
+  ],
+  "examples": [
+    {
+      "request_id": "pr-2026-001",
+      "vendor": "Acme Tools Inc",
+      "amount": 6000.00,
+      "currency": "USD",
+      "business_purpose": "Hardware for office expansion to support headcount growth",
+      "requested_by": "agent_procurement",
+      "business_id": "main_saas",
+      "budget_bucket": "capex_q2",
+      "alternatives_considered": [
+        {"vendor": "Generic Supply Co", "amount": 7500.00, "reason_not_chosen": "Higher price, longer lead time"}
+      ],
+      "attachments": ["quote-acme-2026.pdf"]
+    }
+  ]
+}

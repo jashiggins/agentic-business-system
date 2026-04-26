@@ -217,7 +217,8 @@
               "Received": "1.2.3.4"
             },
             "attachments": []
-          }
+          },
+          "payload_schema_ref": "payloads/inbound_message_payload.schema.json"
         },
         "ROUTE_MESSAGE": {
           "description": "Unified comms determines downstream owner of an inbound message after classification.",
@@ -322,7 +323,8 @@
             "attachments": [
               "quote.pdf"
             ]
-          }
+          },
+          "payload_schema_ref": "payloads/create_purchase_request_payload.schema.json"
         },
         "CHECK_BUDGET": {
           "description": "Verify a purchase request fits within budget allocation and policy thresholds.",
@@ -353,7 +355,8 @@
             ],
             "details": "Vendor: Acme Tools Inc; Amount: 6000 USD",
             "expires_at": "2026-04-26T16:20:00Z"
-          }
+          },
+          "payload_schema_ref": "payloads/request_approval_payload.schema.json"
         },
         "APPROVAL_GRANTED": {
           "description": "Approver assents to a pending request. Multiple grants may be required to fulfill the approval policy.",
@@ -864,7 +867,8 @@
               "request_more_info"
             ],
             "expires_at": "2026-04-26T16:00:00Z"
-          }
+          },
+          "payload_schema_ref": "payloads/user_approval_request_payload.schema.json"
         },
         "USER_APPROVAL_RESPONSE": {
           "description": "Human user response to a USER_APPROVAL_REQUEST.",

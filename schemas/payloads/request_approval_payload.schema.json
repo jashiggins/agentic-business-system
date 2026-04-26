@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RequestApprovalPayload",
+  "description": "Payload for the REQUEST_APPROVAL intent. Solicits approval from one or more authorized approvers for a privileged action.",
+  "type": "object",
+  "required": [
+    "request_id",
+    "action_type",
+    "approvers_required",
+    "details",
+    "requested_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the upstream action being approved (e.g. 'pr-2026-001')."
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "purchase",
+        "payment",
+        "deploy",
+        "policy_exception",
+        "data_export",
+        "credential_action",
+        "vendor_onboarding",
+        "transaction_record",
+        "other"
+      ],
+      "description": "Class of action requiring approval."
+    },
+    "approvers_required": {
+      "type": "array",
+      "description": "Agents/principals whose approval is needed to authorize the action. Order is not significant.",
+      "items": {
+        "type": "string",
+        "pattern": "^(agent_[a-z_]+|external_user)$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "approvers_received": {
+      "type": "array",
+      "description": "Subset of approvers_required who have already granted approval. Useful for partial-chain visibility.",
+      "items": {
+        "type": "string",
+        "pattern": "^(agent_[a-z_]+|external_user)$"
+      },
+      "uniqueItems": true
+    },
+    "details": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 2000,
+      "description": "Human-readable description of the action and its context. Approvers read this to decide."
+    },
+    "requested_by": {
+      "type": "string",
+      "pattern": "^(agent_[a-z_]+|external_user)$",
+      "description": "Agent/principal originating the request."
+    },
+    "amount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Optional dollar value of the action being approved. Required for purchase/payment action_types."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "ISO 4217 code. Required if amount is set."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Hard deadline for approval. After this, the request is treated as denied."
+    },
+    "linked_security_event_id": {
+      "type": "string",
+      "description": "If approval is for a security-driven action, reference the originating SECURITY_EVENT."
+    },
+    "rationale": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional justification paragraph from the requester."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Purchase or payment approvals must include amount and currency.",
+      "if": { "properties": { "action_type": { "enum": ["purchase", "payment"] } } },
+      "then": { "required": ["amount", "currency"] }
+    }
+  ],
+  "examples": [
+    {
+      "request_id": "pr-2026-001",
+      "action_type": "purchase",
+      "approvers_required": ["agent_finance", "agent_ceo", "external_user"],
+      "approvers_received": ["agent_finance"],
+      "details": "Vendor: Acme Tools Inc; Amount: 6000 USD; Purpose: Hardware for office expansion",
+      "requested_by": "agent_procurement",
+      "amount": 6000.00,
+      "currency": "USD",
+      "expires_at": "2026-04-27T16:20:00Z"
+    }
+  ]
+}

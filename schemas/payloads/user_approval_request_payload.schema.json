@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UserApprovalRequestPayload",
+  "description": "Payload for the USER_APPROVAL_REQUEST intent. Routes a decision to a human user when an action exceeds agent authority. The orchestrator parks these for HITL resolution.",
+  "type": "object",
+  "required": [
+    "approval_id",
+    "context_summary",
+    "options",
+    "expires_at",
+    "requested_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "approval_id": {
+      "type": "string",
+      "pattern": "^ua-[A-Za-z0-9_-]+$",
+      "description": "Unique approval identifier with 'ua-' prefix (e.g. 'ua-2026-007')."
+    },
+    "context_summary": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1000,
+      "description": "Concise human-readable summary the user reads to decide. Should answer: what is being asked, why it requires user-level approval, what happens on approve vs deny."
+    },
+    "options": {
+      "type": "array",
+      "description": "Decision options the user can pick.",
+      "items": {
+        "type": "string",
+        "enum": ["approve", "deny", "request_more_info"]
+      },
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC deadline. Past this, the request is auto-denied (when expiry sweep is implemented)."
+    },
+    "requested_by": {
+      "type": "string",
+      "pattern": "^agent_[a-z_]+$",
+      "description": "Agent that escalated to the user. Almost always agent_ceo, but other agents may escalate directly for security-driven actions."
+    },
+    "related_request_id": {
+      "type": "string",
+      "description": "Reference to the upstream request (purchase, export, etc.) this approval gates."
+    },
+    "linked_security_event_id": {
+      "type": "string",
+      "description": "If approval relates to a security incident, the originating SECURITY_EVENT id."
+    },
+    "amount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Dollar value, if applicable. Helps the user contextualize spend approvals."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["LOW", "NORMAL", "HIGH", "CRITICAL"],
+      "default": "NORMAL",
+      "description": "Surfaces in the approval list; CRITICAL items should be acted on within hours, not days."
+    },
+    "default_on_expiry": {
+      "type": "string",
+      "enum": ["deny", "approve"],
+      "default": "deny",
+      "description": "What the system does if no human response by expires_at. 'deny' is safer; 'approve' should be used only for already-low-risk actions."
+    }
+  },
+  "examples": [
+    {
+      "approval_id": "ua-2026-007",
+      "context_summary": "Procurement requests $6,000 from Acme Tools Inc for office expansion hardware. Exceeds CEO+Finance co-approval threshold of $5,000. Vendor risk-reviewed and approved by agent_security. Funding source: capex_q2 budget bucket.",
+      "options": ["approve", "deny", "request_more_info"],
+      "expires_at": "2026-04-27T16:00:00Z",
+      "requested_by": "agent_ceo",
+      "related_request_id": "pr-2026-001",
+      "amount": 6000.00,
+      "currency": "USD",
+      "priority": "NORMAL",
+      "default_on_expiry": "deny"
+    }
+  ]
+}
