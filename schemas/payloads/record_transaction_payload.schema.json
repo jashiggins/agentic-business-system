@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RecordTransactionPayload",
+  "description": "Payload schema for the RECORD_TRANSACTION intent. Posts a completed financial event to the books. Recording is unilateral when documentation and (for spends above threshold) approval chain are present.",
+  "type": "object",
+  "required": [
+    "transaction_id",
+    "amount",
+    "currency",
+    "category",
+    "direction",
+    "vendor_or_customer",
+    "receipt_attached",
+    "business_id",
+    "occurred_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "description": "Globally unique transaction identifier. Duplicates are rejected (replay protection).",
+      "minLength": 1
+    },
+    "amount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Absolute transaction amount, always positive. Use 'direction' to indicate inflow vs outflow."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "ISO 4217 currency code."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["revenue", "cogs", "opex", "capex", "payroll", "tax_paid", "refund", "transfer", "personal"],
+      "description": "Tax category. 'personal' is rare and flags for review."
+    },
+    "direction": {
+      "type": "string",
+      "enum": ["inflow", "outflow"],
+      "description": "Whether money is entering (inflow) or leaving (outflow) the business."
+    },
+    "vendor_or_customer": {
+      "type": "string",
+      "description": "Counterparty name. Required for any non-internal transaction.",
+      "minLength": 1
+    },
+    "receipt_attached": {
+      "type": "boolean",
+      "const": true,
+      "description": "Must be true. Recording without supporting documentation is refused."
+    },
+    "receipt_ref": {
+      "type": "string",
+      "description": "Stored receipt or invoice reference (e.g. 'receipt-2026-04-26-001'). Required if receipt_attached is true.",
+      "minLength": 1
+    },
+    "business_id": {
+      "type": "string",
+      "description": "Business unit / cost center the transaction posts against. Must exist in the business registry.",
+      "minLength": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of when the transaction actually occurred (not when recorded)."
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of when this record was posted to the books."
+    },
+    "approved_by": {
+      "type": "array",
+      "description": "Approval chain that authorized the underlying spend. Required for outflows above policy threshold; not required for inflows or sub-threshold spends.",
+      "items": {
+        "type": "string",
+        "pattern": "^(agent_[a-z_]+|external_user)$"
+      },
+      "uniqueItems": true
+    },
+    "business_purpose": {
+      "type": "string",
+      "description": "Business purpose statement (required by Tax Agent for deductibility). May be brief but must exist.",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "ledger_ref": {
+      "type": "string",
+      "description": "Reference to the immutable ledger entry this transaction is anchored to."
+    },
+    "linked_request_id": {
+      "type": "string",
+      "description": "Optional reference to the upstream purchase or invoice request this transaction satisfies."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Outflows above the auto-approval threshold ($500) require an approved_by chain.",
+      "if": {
+        "properties": {
+          "direction": { "const": "outflow" },
+          "amount": { "exclusiveMinimum": 500 }
+        }
+      },
+      "then": {
+        "required": ["approved_by"]
+      }
+    },
+    {
+      "description": "If receipt_attached is true, receipt_ref must be provided.",
+      "if": { "properties": { "receipt_attached": { "const": true } } },
+      "then": { "required": ["receipt_ref"] }
+    }
+  ],
+  "examples": [
+    {
+      "transaction_id": "txn-pr-2026-001",
+      "amount": 6000.00,
+      "currency": "USD",
+      "category": "capex",
+      "direction": "outflow",
+      "vendor_or_customer": "Acme Tools Inc",
+      "receipt_attached": true,
+      "receipt_ref": "receipt-2026-04-26-001",
+      "business_id": "main_saas",
+      "occurred_at": "2026-04-25T16:21:00Z",
+      "recorded_at": "2026-04-26T14:05:00Z",
+      "approved_by": ["agent_finance", "agent_ceo", "external_user"],
+      "business_purpose": "Hardware for office expansion",
+      "linked_request_id": "pr-2026-001"
+    },
+    {
+      "transaction_id": "txn-rev-2026-0421",
+      "amount": 99.00,
+      "currency": "USD",
+      "category": "revenue",
+      "direction": "inflow",
+      "vendor_or_customer": "Customer ABC",
+      "receipt_attached": true,
+      "receipt_ref": "stripe-ch_3OabcXYZ",
+      "business_id": "main_saas",
+      "occurred_at": "2026-04-21T09:15:30Z",
+      "business_purpose": "Monthly subscription"
+    }
+  ]
+}

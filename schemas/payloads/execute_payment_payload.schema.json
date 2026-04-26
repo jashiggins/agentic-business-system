@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExecutePaymentPayload",
+  "description": "Payload schema for the EXECUTE_PAYMENT intent. Carries the data needed to execute a tokenized payment against an approved purchase. Never contains raw card data.",
+  "type": "object",
+  "required": [
+    "request_id",
+    "amount",
+    "currency",
+    "vendor_or_payee",
+    "payment_method",
+    "approved_by",
+    "business_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "Identifier of the upstream purchase request being paid (e.g. 'pr-2026-001').",
+      "minLength": 1
+    },
+    "amount": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Payment amount. Must be positive. Decimals up to 2 places."
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 currency code (e.g. 'USD', 'EUR').",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "vendor_or_payee": {
+      "type": "string",
+      "description": "Recipient of the payment. Must match an existing vendor record for any first-time payment over the vendor-risk-review threshold.",
+      "minLength": 1
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "Tokenized payment method reference. Must NOT contain raw PAN, CVV, or bank account numbers. Examples: 'virtual_card_token_abc', 'ach_token_xyz', 'wire_token_123'.",
+      "pattern": "^[a-z][a-z_]*_token_[A-Za-z0-9_-]+$"
+    },
+    "approved_by": {
+      "type": "array",
+      "description": "Ordered list of approver IDs whose approvals authorize this payment. Length and contents must satisfy the policy threshold for the amount.",
+      "items": {
+        "type": "string",
+        "pattern": "^(agent_[a-z_]+|external_user)$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "business_id": {
+      "type": "string",
+      "description": "Business unit / cost center the payment posts against.",
+      "minLength": 1
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional UTC timestamp for delayed/scheduled execution. If omitted, execute immediately."
+    },
+    "purchase_order_ref": {
+      "type": "string",
+      "description": "Optional PO number reference."
+    },
+    "invoice_ref": {
+      "type": "string",
+      "description": "Optional invoice identifier the payment satisfies."
+    },
+    "memo": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Optional free-text memo carried with the payment."
+    }
+  },
+  "examples": [
+    {
+      "request_id": "pr-2026-001",
+      "amount": 6000.00,
+      "currency": "USD",
+      "vendor_or_payee": "Acme Tools Inc",
+      "payment_method": "virtual_card_token_abc123",
+      "approved_by": ["agent_finance", "agent_ceo", "external_user"],
+      "business_id": "main_saas",
+      "purchase_order_ref": "PO-2026-042",
+      "memo": "Hardware for office expansion"
+    }
+  ]
+}

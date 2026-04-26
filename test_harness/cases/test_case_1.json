@@ -1,8 +1,50 @@
 {
   "name": "Lead to Sale",
+  "description": "End-to-end happy path: inbound lead -> welcome email -> revenue transaction recorded.",
   "steps": [
-    {"message_id":"m1","intent":"CREATE_LEAD","from_agent_id":"agent_unified_comms","to_agent_id":"agent_marketing","payload":{"lead":{"email":"lead@example.com","name":"Test Lead"}}},
-    {"message_id":"m2","intent":"SEND_EMAIL","from_agent_id":"agent_marketing","to_agent_id":"agent_unified_comms","payload":{"to":"lead@example.com","subject":"Welcome","body":"Intro email"}},
-    {"message_id":"m3","intent":"RECORD_TRANSACTION","from_agent_id":"agent_finance","to_agent_id":"agent_tax","payload":{"transaction_id":"txn-001","amount":100.0,"currency":"USD"}}
+    {
+      "message_id": "m1",
+      "intent": "CREATE_LEAD",
+      "from_agent_id": "agent_unified_comms",
+      "to_agent_id": "agent_marketing",
+      "payload": {
+        "lead": {
+          "email": "lead@example.com",
+          "name": "Test Lead",
+          "source": "website_form"
+        }
+      }
+    },
+    {
+      "message_id": "m2",
+      "intent": "SEND_EMAIL",
+      "from_agent_id": "agent_marketing",
+      "to_agent_id": "agent_unified_comms",
+      "payload": {
+        "to": "lead@example.com",
+        "subject": "Welcome",
+        "body": "Intro email",
+        "review_required": true
+      }
+    },
+    {
+      "message_id": "m3",
+      "intent": "RECORD_TRANSACTION",
+      "from_agent_id": "agent_finance",
+      "to_agent_id": "agent_tax",
+      "payload": {
+        "transaction_id": "txn-001",
+        "amount": 100.00,
+        "currency": "USD",
+        "category": "revenue",
+        "direction": "inflow",
+        "vendor_or_customer": "Customer ABC",
+        "receipt_attached": true,
+        "receipt_ref": "stripe-ch_001",
+        "business_id": "main_saas",
+        "occurred_at": "2026-04-21T09:15:30Z",
+        "business_purpose": "Monthly subscription"
+      }
+    }
   ]
 }

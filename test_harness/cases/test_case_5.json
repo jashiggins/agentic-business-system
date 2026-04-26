@@ -1,6 +1,6 @@
 {
   "name": "Data Leak Detection and Recovery",
-  "description": "Simulate a bulk export attempt; Privacy and Security Agents detect and block export, rotate credentials, and initiate recovery.",
+  "description": "Simulate a bulk export attempt; Privacy and Security Agents detect and block export, suspend credentials, and initiate recovery.",
   "steps": [
     {
       "message_id": "m1",
@@ -9,9 +9,17 @@
       "to_agent_id": "data_store_service",
       "payload": {
         "request_id": "export-2026-01",
-        "query": "SELECT * FROM customers WHERE created_at < '2026-01-01'",
         "requested_by": "agent_research",
-        "estimated_rows": 120000
+        "data_source": "customers",
+        "query_description": "All customers created before 2026-01-01 for cohort retention analysis",
+        "filters": {"created_before": "2026-01-01"},
+        "estimated_rows": 120000,
+        "sensitivity": "RESTRICTED",
+        "fields": ["customer_id", "email", "name", "created_at", "plan_tier"],
+        "purpose": "Cohort retention analysis for product strategy",
+        "lawful_basis": "legitimate_interest",
+        "destination": "s3://internal-analytics/cohort-2026/",
+        "retention_days": 90
       }
     },
     {
@@ -34,7 +42,7 @@
       "payload": {
         "request_id": "export-2026-01",
         "action": "deny",
-        "reason": "sensitivity_high_and_no_approved_business_case"
+        "reason": "Sensitivity RESTRICTED and row count 120000 exceeds threshold without approved business case."
       }
     },
     {
@@ -43,9 +51,14 @@
       "from_agent_id": "agent_privacy",
       "to_agent_id": "agent_security",
       "payload": {
+        "request_id": "rev-2026-04-26-001",
         "affected_principal": "agent_research",
+        "principal_type": "agent",
         "action": "suspend",
-        "reason": "unapproved bulk export attempt"
+        "duration_minutes": null,
+        "reason": "Unapproved bulk export attempt of 120,000 customer records; investigation pending.",
+        "requested_by": "agent_privacy",
+        "linked_event_id": "sec-2026-04-25-0042"
       }
     },
     {
@@ -54,11 +67,13 @@
       "from_agent_id": "agent_security",
       "to_agent_id": "agent_ceo",
       "payload": {
-        "event_id": "sec-0002",
+        "event_id": "sec-2026-04-25-0042",
         "category": "DATA_LEAK_RISK",
         "severity": "CRITICAL",
-        "summary": "Blocked unapproved bulk export; credentials suspended",
-        "timestamp": "2026-04-25T16:31:00Z"
+        "summary": "Blocked unapproved bulk export of 120k customer records; credentials suspended.",
+        "detected_at": "2026-04-25T16:31:00Z",
+        "detected_by": "agent_privacy",
+        "playbook_ref": "/bootstrap/incident_response_playbooks/data_leak_playbook.txt"
       }
     }
   ],

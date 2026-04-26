@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SecurityEventPayload",
+  "description": "Payload schema for the SECURITY_EVENT intent. Aligned with the existing SecurityEventSystem schema in security_events.json. Every security-relevant observation goes through this shape.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "category",
+    "severity",
+    "summary",
+    "detected_at",
+    "detected_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Unique identifier for this security event (e.g. 'sec-2026-04-26-0001').",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "PHISHING_SUSPECTED",
+        "MALWARE_SUSPECTED",
+        "MALICIOUS_URL",
+        "PROMPT_INJECTION_ATTEMPT",
+        "DATA_LEAK_RISK",
+        "UNAUTHORIZED_ACCESS_ATTEMPT",
+        "POLICY_VIOLATION",
+        "ANOMALOUS_BEHAVIOR",
+        "VENDOR_RISK_FLAGGED",
+        "FRAUD_OR_PAYMENT_RISK",
+        "SCAN_CLEAN",
+        "OTHER"
+      ],
+      "description": "Threat classification. Must match Security Agent prompt taxonomy."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"],
+      "description": "Impact severity. CRITICAL reserved for incidents requiring immediate playbook execution."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 1000,
+      "description": "Human-readable one-sentence description of the event."
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp when the event was detected."
+    },
+    "detected_by": {
+      "type": "string",
+      "pattern": "^(agent_[a-z_]+|external_[a-z_]+|system)$",
+      "description": "Detector identity. Usually agent_security, but other agents and external systems may also emit events."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Detection confidence (0.0-1.0). Useful for triage."
+    },
+    "indicators_matched": {
+      "type": "array",
+      "description": "List of indicators (rule names, IoC types) that triggered classification.",
+      "items": { "type": "string" }
+    },
+    "ioc": {
+      "type": "object",
+      "description": "Indicators of compromise. Free-form key/value pairs.",
+      "additionalProperties": true,
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "sender": { "type": "string" },
+        "ip": { "type": "string" },
+        "file_hash": { "type": "string" },
+        "domain": { "type": "string" }
+      }
+    },
+    "affected_principals": {
+      "type": "array",
+      "description": "Agents, users, or accounts affected by or involved in this event.",
+      "items": {
+        "type": "string",
+        "pattern": "^(agent_[a-z_]+|external_user|customer:[A-Za-z0-9_-]+)$"
+      },
+      "uniqueItems": true
+    },
+    "playbook_ref": {
+      "type": "string",
+      "description": "Path to the incident response playbook that applies (e.g. '/bootstrap/incident_response_playbooks/phishing_playbook.txt')."
+    },
+    "recommended_actions": {
+      "type": "array",
+      "description": "Suggested immediate actions for downstream agents.",
+      "items": { "type": "string" }
+    },
+    "context_message_id": {
+      "type": "string",
+      "description": "If this event was triggered by a specific message, its message_id."
+    },
+    "remediation_status": {
+      "type": "string",
+      "enum": ["new", "investigating", "contained", "remediated", "closed", "false_positive"],
+      "description": "Lifecycle stage for the event. Defaults to 'new' on emission."
+    }
+  },
+  "examples": [
+    {
+      "event_id": "sec-2026-04-26-0001",
+      "category": "PHISHING_SUSPECTED",
+      "severity": "HIGH",
+      "summary": "Quarantined phishing email targeting users with credential harvest form.",
+      "detected_at": "2026-04-26T16:11:00Z",
+      "detected_by": "agent_security",
+      "confidence": 0.92,
+      "indicators_matched": ["lookalike_domain", "credential_form_request", "urgency_language"],
+      "ioc": {
+        "url": "http://malicious.example/login",
+        "sender": "attacker@example.com"
+      },
+      "affected_principals": ["agent_unified_comms"],
+      "playbook_ref": "/bootstrap/incident_response_playbooks/phishing_playbook.txt",
+      "recommended_actions": ["quarantine_message", "add_blocklist", "user_notification"],
+      "remediation_status": "contained"
+    }
+  ]
+}

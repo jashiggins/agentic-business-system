@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExportRequestPayload",
+  "description": "Payload schema for the EXPORT_REQUEST intent. Routes through Privacy and Security review based on row count and sensitivity.",
+  "type": "object",
+  "required": [
+    "request_id",
+    "requested_by",
+    "data_source",
+    "estimated_rows",
+    "sensitivity",
+    "purpose",
+    "lawful_basis"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "Unique identifier for this export request.",
+      "minLength": 1
+    },
+    "requested_by": {
+      "type": "string",
+      "pattern": "^(agent_[a-z_]+|external_user)$",
+      "description": "Agent or principal initiating the export."
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Logical name of the data source (table, view, or service)."
+    },
+    "query_description": {
+      "type": "string",
+      "description": "Human-readable description of what is being exported. Must be specific enough to evaluate scope.",
+      "minLength": 10,
+      "maxLength": 1000
+    },
+    "filters": {
+      "type": "object",
+      "description": "Filter criteria as key/value pairs. e.g. {\"created_before\": \"2026-01-01\", \"region\": \"US\"}.",
+      "additionalProperties": true
+    },
+    "estimated_rows": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Expected row count. Above 10000 OR sensitivity=RESTRICTED triggers BLOCK_EXPORT unless explicitly approved."
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"],
+      "description": "Highest sensitivity classification of any field in the export."
+    },
+    "fields": {
+      "type": "array",
+      "description": "List of fields included in the export. Useful for Privacy review.",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Business purpose for the export. Vague purposes trigger refusal.",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    "lawful_basis": {
+      "type": "string",
+      "enum": ["consent", "contract", "legitimate_interest", "legal_obligation", "vital_interest", "public_task"],
+      "description": "Legal basis for processing personal data, per GDPR Article 6 vocabulary. Required even when GDPR doesn't apply, for consistency."
+    },
+    "destination": {
+      "type": "string",
+      "description": "Where the export goes (e.g. 's3://bucket/path', 'email:user@example.com', 'sftp://...'). Cross-border destinations may require additional review."
+    },
+    "retention_days": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "How long the exported file should exist before automatic deletion. 0 means destination handles retention."
+    },
+    "third_party_recipient": {
+      "type": "object",
+      "description": "If the export goes to a third party, document the DPA and recipient.",
+      "properties": {
+        "name": { "type": "string" },
+        "dpa_ref": { "type": "string", "description": "Data Processing Agreement reference." },
+        "jurisdiction": { "type": "string", "description": "ISO 3166-1 alpha-2 country code (e.g. 'US', 'DE')." }
+      },
+      "required": ["name", "dpa_ref"],
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "description": "Exports of personal data must specify lawful basis (already required) AND have a destination + retention.",
+      "if": {
+        "properties": {
+          "sensitivity": { "enum": ["CONFIDENTIAL", "RESTRICTED"] }
+        }
+      },
+      "then": {
+        "required": ["destination", "retention_days"]
+      }
+    }
+  ],
+  "examples": [
+    {
+      "request_id": "export-2026-001",
+      "requested_by": "agent_research",
+      "data_source": "customers",
+      "query_description": "All customers created before 2026-01-01 in US region for cohort retention analysis",
+      "filters": { "created_before": "2026-01-01", "region": "US" },
+      "estimated_rows": 8200,
+      "sensitivity": "CONFIDENTIAL",
+      "fields": ["customer_hash", "created_at", "plan_tier", "country"],
+      "purpose": "Q1 retention cohort analysis for product strategy review",
+      "lawful_basis": "legitimate_interest",
+      "destination": "s3://internal-analytics/cohort-2026-q1/",
+      "retention_days": 90
+    }
+  ]
+}

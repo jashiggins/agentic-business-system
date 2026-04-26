@@ -161,6 +161,10 @@
               "RESTRICTED"
             ],
             "default": "INTERNAL"
+          },
+          "payload_schema_ref": {
+            "type": "string",
+            "description": "Path (relative to schemas/) of the JSON Schema that validates the payload field for this intent. Optional but recommended for high-stakes intents."
           }
         }
       },
@@ -257,7 +261,8 @@
             "vendor_or_customer": "Customer ABC",
             "receipt_attached": true,
             "business_id": "main_saas"
-          }
+          },
+          "payload_schema_ref": "payloads/record_transaction_payload.schema.json"
         },
         "RECONCILE_STATEMENT": {
           "description": "Match financial statement lines against recorded transactions; flag mismatches for Audit.",
@@ -391,7 +396,8 @@
             "amount": 6000,
             "currency": "USD",
             "timestamp": "2026-04-25T16:21:00Z"
-          }
+          },
+          "payload_schema_ref": "payloads/execute_payment_payload.schema.json"
         },
         "VENDOR_RISK_REVIEW": {
           "description": "Security and Legal evaluate a high-risk vendor before onboarding.",
@@ -502,7 +508,8 @@
             "summary": "Quarantined phishing email targeting users",
             "timestamp": "2026-04-25T16:11:00Z",
             "playbook_ref": "/bootstrap/incident_response_playbooks/phishing_playbook.txt"
-          }
+          },
+          "payload_schema_ref": "payloads/security_event_payload.schema.json"
         },
         "QUARANTINE_MESSAGE": {
           "description": "Quarantine a message and any related thread artifacts pending Security review.",
@@ -592,7 +599,8 @@
             "requested_by": "agent_research",
             "estimated_rows": 120000,
             "purpose": "cohort_analysis"
-          }
+          },
+          "payload_schema_ref": "payloads/export_request_payload.schema.json"
         },
         "DETECT_BULK_EXPORT": {
           "description": "Privacy/data store flags a bulk export attempt that crosses sensitivity thresholds.",
@@ -636,7 +644,8 @@
             "action": "suspend",
             "reason": "unapproved bulk export attempt",
             "duration_minutes": null
-          }
+          },
+          "payload_schema_ref": "payloads/revoke_credentials_payload.schema.json"
         },
         "ROTATE_KEYS": {
           "description": "Rotate cryptographic keys, API tokens, or shared secrets. Often triggered by playbooks.",

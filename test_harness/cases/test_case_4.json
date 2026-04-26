@@ -1,6 +1,6 @@
 {
   "name": "Procurement Approval",
-  "description": "Procurement Agent requests a $6,000 purchase; Finance and CEO approvals required before execution. Procurement (not Finance) executes payments after approval, per agent prompts and the intents catalog typical_route.",
+  "description": "Procurement requests $6,000 purchase; Finance and CEO approvals required before execution. Procurement (not Finance) executes payments after approval.",
   "steps": [
     {
       "message_id": "m1",
@@ -23,7 +23,9 @@
       "to_agent_id": "agent_finance",
       "payload": {
         "request_id": "pr-2026-001",
-        "amount": 6000
+        "amount": 6000,
+        "currency": "USD",
+        "budget_bucket": "capex_q2"
       }
     },
     {
@@ -33,8 +35,8 @@
       "to_agent_id": "agent_ceo",
       "payload": {
         "request_id": "pr-2026-001",
-        "approvers_required": ["agent_finance","agent_ceo"],
-        "details": "Vendor: Acme Tools Inc; Amount: 6000 USD"
+        "approvers_required": ["agent_finance", "agent_ceo", "external_user"],
+        "details": "Vendor: Acme Tools Inc; Amount: 6000 USD; Purpose: Hardware for office expansion"
       }
     },
     {
@@ -55,8 +57,13 @@
       "to_agent_id": "agent_procurement",
       "payload": {
         "request_id": "pr-2026-001",
+        "amount": 6000.00,
+        "currency": "USD",
+        "vendor_or_payee": "Acme Tools Inc",
         "payment_method": "virtual_card_token_abc",
-        "timestamp": "2026-04-25T16:21:00Z"
+        "approved_by": ["agent_finance", "agent_ceo", "external_user"],
+        "business_id": "main_saas",
+        "purchase_order_ref": "PO-2026-042"
       }
     },
     {
@@ -66,12 +73,18 @@
       "to_agent_id": "agent_finance",
       "payload": {
         "transaction_id": "txn-pr-2026-001",
-        "amount": 6000,
+        "amount": 6000.00,
         "currency": "USD",
-        "category": "CapEx",
+        "category": "capex",
+        "direction": "outflow",
         "vendor_or_customer": "Acme Tools Inc",
         "receipt_attached": true,
-        "business_id": "main_saas"
+        "receipt_ref": "receipt-2026-04-26-001",
+        "business_id": "main_saas",
+        "occurred_at": "2026-04-25T16:21:00Z",
+        "approved_by": ["agent_finance", "agent_ceo", "external_user"],
+        "business_purpose": "Hardware for office expansion",
+        "linked_request_id": "pr-2026-001"
       }
     }
   ],
