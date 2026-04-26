@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AuditFindingPayload",
+  "description": "Payload for the AUDIT_FINDING intent. Audit Agent reports a quality issue, policy violation, or inconsistency.",
+  "type": "object",
+  "required": [
+    "finding_id",
+    "classification",
+    "severity",
+    "target_id",
+    "target_type",
+    "issue",
+    "recommended_correction",
+    "detected_at",
+    "detected_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "finding_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique finding identifier."
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "MISSING_DOCUMENTATION",
+        "POLICY_VIOLATION",
+        "SCHEMA_VIOLATION",
+        "INCONSISTENCY",
+        "MISCATEGORIZATION",
+        "PATTERN_ANOMALY",
+        "STALE_DATA",
+        "OTHER"
+      ],
+      "description": "Finding category — must match Audit Agent prompt taxonomy."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+      "description": "CRITICAL halts active operations until resolved."
+    },
+    "target_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the audited artifact (transaction_id, campaign_id, message_id, run_id, etc.)."
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "transaction",
+        "marketing_campaign",
+        "automation_run",
+        "purchase_request",
+        "approval_request",
+        "export_request",
+        "agent_response",
+        "policy",
+        "other"
+      ]
+    },
+    "issue": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 2000,
+      "description": "What's wrong, in plain language. Specific enough that the originating agent can act."
+    },
+    "recommended_correction": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 1000,
+      "description": "What the originating agent should do to fix it."
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "detected_by": {
+      "type": "string",
+      "pattern": "^agent_[a-z_]+$",
+      "description": "Almost always agent_audit; other agents may also flag findings."
+    },
+    "policy_ref": {
+      "type": "string",
+      "description": "Path or reference to the policy that was violated (e.g. 'policies/rbac_policy.json#approval_thresholds')."
+    },
+    "schema_ref": {
+      "type": "string",
+      "description": "If classification is SCHEMA_VIOLATION, the schema that wasn't satisfied."
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Supporting data (event ids, related findings, sample message excerpts)."
+    },
+    "related_findings": {
+      "type": "array",
+      "description": "Other finding_ids in a connected pattern (used for PATTERN_ANOMALY).",
+      "items": { "type": "string" }
+    },
+    "remediation_status": {
+      "type": "string",
+      "enum": ["new", "acknowledged", "in_progress", "resolved", "wont_fix"],
+      "default": "new"
+    }
+  },
+  "examples": [
+    {
+      "finding_id": "audit-2026-014",
+      "classification": "POLICY_VIOLATION",
+      "severity": "MEDIUM",
+      "target_id": "campaign-spring-2026",
+      "target_type": "marketing_campaign",
+      "issue": "Campaign copy claims 'GDPR compliant' but no DPA reference is attached and no Privacy Agent review is recorded for this campaign.",
+      "recommended_correction": "Either remove the GDPR claim or request PRIVACY_REVIEW_REQUEST and attach DPA reference before publication.",
+      "detected_at": "2026-04-26T14:00:00Z",
+      "detected_by": "agent_audit",
+      "policy_ref": "agents/marketing_agent.json#notes"
+    }
+  ]
+}

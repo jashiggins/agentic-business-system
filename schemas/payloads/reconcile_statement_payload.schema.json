@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ReconcileStatementPayload",
+  "description": "Payload for the RECONCILE_STATEMENT intent. Reports the result of matching external statement lines (bank, card, processor) against recorded transactions for a given period.",
+  "type": "object",
+  "required": [
+    "statement_period",
+    "statement_source",
+    "business_id",
+    "matched_count",
+    "unmatched_count",
+    "discrepancy_total",
+    "currency",
+    "reconciled_at",
+    "reconciled_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "statement_period": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}$",
+      "description": "Period in YYYY-MM format (calendar month)."
+    },
+    "statement_source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source of the external statement (e.g. 'chase_business_checking', 'stripe', 'amex_corporate')."
+    },
+    "business_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Business unit / cost center the statement belongs to."
+    },
+    "matched_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of statement lines that matched a recorded transaction."
+    },
+    "unmatched_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of statement lines that could not be matched. Triggers AUDIT_REVIEW_REQUEST when > 0."
+    },
+    "discrepancy_total": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Absolute total amount across all unmatched or mismatched lines. >$500 escalates per Finance prompt."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "reconciled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reconciled_by": {
+      "type": "string",
+      "pattern": "^agent_[a-z_]+$",
+      "description": "Agent that ran the reconciliation. Almost always agent_finance."
+    },
+    "unmatched_items": {
+      "type": "array",
+      "description": "Detail on unmatched lines, for downstream investigation. Required when unmatched_count > 0.",
+      "items": {
+        "type": "object",
+        "required": ["line_id", "amount", "occurred_at", "description"],
+        "properties": {
+          "line_id": { "type": "string" },
+          "amount": { "type": "number" },
+          "occurred_at": { "type": "string", "format": "date-time" },
+          "description": { "type": "string" },
+          "candidate_transaction_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Possible matching transactions that didn't quite line up."
+          },
+          "discrepancy_kind": {
+            "type": "string",
+            "enum": ["missing_record", "amount_mismatch", "duplicate", "wrong_period", "unknown"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "statement_total_credit": {
+      "type": "number",
+      "description": "Sum of all credit (inflow) lines on the statement. Optional reference figure."
+    },
+    "statement_total_debit": {
+      "type": "number",
+      "description": "Sum of all debit (outflow) lines on the statement. Optional reference figure."
+    }
+  },
+  "allOf": [
+    {
+      "description": "When unmatched_count > 0, unmatched_items must be provided so investigation has data to work with.",
+      "if": { "properties": { "unmatched_count": { "minimum": 1 } } },
+      "then": { "required": ["unmatched_items"] }
+    }
+  ],
+  "examples": [
+    {
+      "statement_period": "2026-04",
+      "statement_source": "chase_business_checking",
+      "business_id": "main_saas",
+      "matched_count": 142,
+      "unmatched_count": 3,
+      "discrepancy_total": 248.17,
+      "currency": "USD",
+      "reconciled_at": "2026-05-02T09:00:00Z",
+      "reconciled_by": "agent_finance",
+      "unmatched_items": [
+        {
+          "line_id": "stmt-2026-04-088",
+          "amount": 99.00,
+          "occurred_at": "2026-04-18T14:22:00Z",
+          "description": "POS DEBIT - VENDOR XYZ",
+          "candidate_transaction_ids": [],
+          "discrepancy_kind": "missing_record"
+        }
+      ]
+    }
+  ]
+}

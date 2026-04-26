@@ -277,7 +277,8 @@
             "matched_count": 142,
             "unmatched_count": 3,
             "discrepancy_total": 248.17
-          }
+          },
+          "payload_schema_ref": "payloads/reconcile_statement_payload.schema.json"
         },
         "GENERATE_FINANCIAL_REPORT": {
           "description": "Produce a financial report (P&L, cashflow, MRR breakdown) for a given period.",
@@ -292,7 +293,8 @@
             "business_ids": [
               "main_saas"
             ]
-          }
+          },
+          "payload_schema_ref": "payloads/generate_financial_report_payload.schema.json"
         },
         "GENERATE_TAX_SUMMARY": {
           "description": "Produce a tax-ready summary of transactions, deductions, and supporting documentation.",
@@ -305,7 +307,8 @@
             "tax_year": 2026,
             "jurisdiction": "US-FED",
             "format": "audit_pack"
-          }
+          },
+          "payload_schema_ref": "payloads/generate_tax_summary_payload.schema.json"
         },
         "CREATE_PURCHASE_REQUEST": {
           "description": "Open a procurement request for vendor goods or services. Triggers approval workflow.",
@@ -725,7 +728,8 @@
             "target": "campaign-spring-2026",
             "issue": "Claim 'GDPR compliant' lacks supporting documentation",
             "recommended_correction": "Remove claim or attach DPA reference"
-          }
+          },
+          "payload_schema_ref": "payloads/audit_finding_payload.schema.json"
         },
         "RESEARCH_REQUEST": {
           "description": "CEO requests market, competitor, or partnership research from Research Agent.",
@@ -753,7 +757,8 @@
             "deadline": "2026-06-15",
             "eligibility_match": "high",
             "draft_status": "not_started"
-          }
+          },
+          "payload_schema_ref": "payloads/grant_opportunity_payload.schema.json"
         },
         "CREATE_TASK": {
           "description": "CEO assigns a task to a domain agent. Carries scope, deadline, and KPI linkage.",
@@ -813,7 +818,8 @@
             "current_value": 8420.55,
             "currency": "USD",
             "as_of": "2026-04-25T23:59:59Z"
-          }
+          },
+          "payload_schema_ref": "payloads/kpi_report_payload.schema.json"
         },
         "HEARTBEAT_CHECK": {
           "description": "Liveness probe sent to an agent per the heartbeat protocol.",

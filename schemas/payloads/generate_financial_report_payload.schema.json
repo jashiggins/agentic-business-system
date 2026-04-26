@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GenerateFinancialReportPayload",
+  "description": "Payload for the GENERATE_FINANCIAL_REPORT intent. Requests a financial report for a period and one or more business units.",
+  "type": "object",
+  "required": [
+    "report_type",
+    "period",
+    "business_ids",
+    "requested_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "monthly_pnl",
+        "quarterly_pnl",
+        "annual_pnl",
+        "cashflow",
+        "mrr_breakdown",
+        "balance_sheet",
+        "burn_runway",
+        "ar_aging",
+        "ap_aging"
+      ],
+      "description": "Closed enum of supported report kinds."
+    },
+    "period": {
+      "type": "string",
+      "description": "Period covered. Format depends on report_type: 'YYYY-MM' for monthly, 'YYYY-Qn' for quarterly, 'YYYY' for annual, 'YYYY-MM-DD/YYYY-MM-DD' for ad-hoc range.",
+      "pattern": "^(\\d{4}|\\d{4}-\\d{2}|\\d{4}-Q[1-4]|\\d{4}-\\d{2}-\\d{2}/\\d{4}-\\d{2}-\\d{2})$"
+    },
+    "business_ids": {
+      "type": "array",
+      "description": "One or more business units to include. Empty list is rejected (must be explicit).",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "requested_by": {
+      "type": "string",
+      "pattern": "^(agent_[a-z_]+|external_user)$"
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "Reporting currency. If not specified, books currency is used."
+    },
+    "consolidate": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true and multiple business_ids are provided, return a consolidated view in addition to per-business breakdowns."
+    },
+    "include_drafts": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include uncommitted/draft transactions. Off by default — drafts shouldn't appear in finalized reports."
+    },
+    "format": {
+      "type": "string",
+      "enum": ["json", "csv", "pdf"],
+      "default": "json",
+      "description": "Output format requested."
+    },
+    "purpose": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Optional reason for the report. Useful for audit trail (e.g. 'board pack Q2', 'investor update')."
+    }
+  },
+  "examples": [
+    {
+      "report_type": "monthly_pnl",
+      "period": "2026-04",
+      "business_ids": ["main_saas"],
+      "requested_by": "agent_ceo",
+      "currency": "USD",
+      "format": "json",
+      "purpose": "Monthly review with team"
+    }
+  ]
+}

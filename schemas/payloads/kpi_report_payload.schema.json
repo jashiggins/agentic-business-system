@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KpiReportPayload",
+  "description": "Payload for the KPI_REPORT intent. Reports the current value of one or more KPIs for the registry.",
+  "type": "object",
+  "required": [
+    "as_of",
+    "reported_by",
+    "metrics"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "as_of": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp the metric values are valid as of."
+    },
+    "reported_by": {
+      "type": "string",
+      "pattern": "^agent_[a-z_]+$",
+      "description": "Agent emitting the report."
+    },
+    "business_id": {
+      "type": "string",
+      "description": "Business scope of the metrics. Omit for cross-business or system-level metrics."
+    },
+    "period": {
+      "type": "string",
+      "description": "Optional period the values cover (e.g. '2026-04', '2026-Q1', 'rolling_30d')."
+    },
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One or more KPI readings. Bundling reduces envelope traffic when multiple KPIs are reported together.",
+      "items": {
+        "type": "object",
+        "required": ["kpi_id", "current_value", "metric_type"],
+        "properties": {
+          "kpi_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Identifier matching an entry in the KPI registry."
+          },
+          "current_value": {
+            "type": "number",
+            "description": "Current numeric value."
+          },
+          "metric_type": {
+            "type": "string",
+            "enum": ["currency", "count", "percentage", "duration", "score", "ratio"]
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit qualifier (e.g. 'USD' for currency, 'seconds' for duration, 'pct' for percentage)."
+          },
+          "target_value": {
+            "type": "number",
+            "description": "Optional target the KPI is aimed at; useful for downstream gap analysis."
+          },
+          "trend": {
+            "type": "string",
+            "enum": ["up", "down", "flat"],
+            "description": "Direction vs prior period."
+          },
+          "delta_vs_prior": {
+            "type": "number",
+            "description": "Numeric change vs previous period's reading."
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Data quality / confidence in this reading."
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "examples": [
+    {
+      "as_of": "2026-04-25T23:59:59Z",
+      "reported_by": "agent_finance",
+      "business_id": "main_saas",
+      "period": "2026-04",
+      "metrics": [
+        {
+          "kpi_id": "monthly_revenue",
+          "current_value": 8420.55,
+          "metric_type": "currency",
+          "unit": "USD",
+          "target_value": 10000.00,
+          "trend": "up",
+          "delta_vs_prior": 1230.00,
+          "confidence": "high"
+        },
+        {
+          "kpi_id": "active_customers",
+          "current_value": 87,
+          "metric_type": "count",
+          "trend": "up",
+          "delta_vs_prior": 12,
+          "confidence": "high"
+        }
+      ]
+    }
+  ]
+}

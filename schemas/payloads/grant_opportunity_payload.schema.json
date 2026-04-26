@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GrantOpportunityPayload",
+  "description": "Payload for the GRANT_OPPORTUNITY intent. Surfaces a discovered grant for CEO review with eligibility and effort assessment.",
+  "type": "object",
+  "required": [
+    "grant_id",
+    "title",
+    "funder",
+    "amount_max",
+    "currency",
+    "deadline",
+    "eligibility_match",
+    "estimated_effort_hours",
+    "evidence_source",
+    "surfaced_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "grant_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier (e.g. 'sba-sbir-phase1-2026')."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5
+    },
+    "funder": {
+      "type": "string",
+      "minLength": 2,
+      "description": "Issuing organization."
+    },
+    "amount_max": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "amount_min": {
+      "type": "number",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date",
+      "description": "Application deadline (date, not datetime)."
+    },
+    "buffer_days_until_deadline": {
+      "type": "integer",
+      "description": "Days between now and deadline. Negative or insufficient buffer should trigger refusal upstream."
+    },
+    "eligibility_match": {
+      "type": "string",
+      "enum": ["high", "medium", "low", "ineligible"],
+      "description": "Subjective fit assessment. 'ineligible' surfaces only for transparency; never proceeds to application."
+    },
+    "eligibility_notes": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Specific eligibility considerations (jurisdiction, stage, sector, other criteria)."
+    },
+    "estimated_effort_hours": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Hours to draft and submit. Uncertainty > 2x should be flagged or refused upstream."
+    },
+    "evidence_source": {
+      "type": "string",
+      "format": "uri",
+      "description": "Public URL where the grant was found. Required for verification."
+    },
+    "surfaced_by": {
+      "type": "string",
+      "pattern": "^agent_[a-z_]+$",
+      "description": "Almost always agent_grants; could be agent_research."
+    },
+    "fit_rationale": {
+      "type": "string",
+      "maxLength": 1500,
+      "description": "Why this grant fits the business. Specific reasons, not generic optimism."
+    },
+    "risk_factors": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Known risks: low acceptance rate, complex requirements, conflicting clauses, etc."
+    },
+    "draft_status": {
+      "type": "string",
+      "enum": ["not_started", "drafting", "ready_for_review", "submitted", "withdrawn"],
+      "default": "not_started"
+    },
+    "next_step_if_approved": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Concrete next action if CEO approves pursuit."
+    }
+  },
+  "allOf": [
+    {
+      "description": "If amount_min is provided, it must be <= amount_max (logically; not enforced by JSON Schema but documented here for human reviewers).",
+      "if": { "properties": { "amount_min": { "type": "number" } }, "required": ["amount_min"] },
+      "then": { "required": ["amount_max"] }
+    }
+  ],
+  "examples": [
+    {
+      "grant_id": "sba-sbir-phase1-2026",
+      "title": "SBA Small Business Innovation Research Phase I",
+      "funder": "U.S. Small Business Administration",
+      "amount_max": 50000,
+      "amount_min": 25000,
+      "currency": "USD",
+      "deadline": "2026-06-15",
+      "buffer_days_until_deadline": 50,
+      "eligibility_match": "high",
+      "eligibility_notes": "U.S.-based <500 employees, technology innovation focus — all confirmed.",
+      "estimated_effort_hours": 40,
+      "evidence_source": "https://www.sbir.gov/opportunities/sba-2026-01",
+      "surfaced_by": "agent_grants",
+      "fit_rationale": "Phase I matches early-stage technical R&D; agentic tooling fits the innovation criterion.",
+      "risk_factors": ["~12% acceptance rate", "Requires technical narrative reviewed by external researcher"],
+      "draft_status": "not_started",
+      "next_step_if_approved": "CREATE_TASK to draft Section A (Technical Narrative); request Research support for competitive landscape section."
+    }
+  ]
+}
