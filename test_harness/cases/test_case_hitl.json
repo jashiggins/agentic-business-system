@@ -1,0 +1,19 @@
+{
+  "name": "HITL Approval Park-and-Resume",
+  "description": "Verify USER_APPROVAL_REQUEST is parked rather than auto-acked, and a CLI approve resumes it.",
+  "steps": [
+    {
+      "message_id": "m1",
+      "intent": "USER_APPROVAL_REQUEST",
+      "from_agent_id": "agent_ceo",
+      "to_agent_id": "external_user",
+      "payload": {
+        "approval_id": "ua-test-001",
+        "context_summary": "Test approval for HITL flow verification",
+        "options": ["approve", "deny", "request_more_info"],
+        "expires_at": "2026-04-27T00:00:00Z",
+        "related_request_id": "pr-test-001"
+      }
+    }
+  ]
+}
